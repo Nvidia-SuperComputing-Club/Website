@@ -1,6 +1,5 @@
 import HeroSection from '../components/sections/HeroSection.jsx'
 import AboutSection from '../components/sections/AboutSection.jsx'
-import StatsSection from '../components/sections/StatsSection.jsx'
 import FeaturedSection from '../components/sections/FeaturedSection.jsx'
 import CommunitiesSection from '../components/sections/CommunitiesSection.jsx'
 import JoinCTA from '../components/sections/JoinCTA.jsx'
@@ -18,7 +17,7 @@ const SPOTLIGHT_EVENT = {
 export default function HomePage() {
   return (
     <>
-      {/* 1. Hero Section with Circuit Canvas Micro-animation */}
+      {/* 1. Hero Section with Circuit Canvas Micro-animation & 4 Core Metric Cards */}
       <HeroSection />
 
       {/* 2. About / Four Pillars Section */}
@@ -29,16 +28,13 @@ export default function HomePage() {
         <EventCountdown event={SPOTLIGHT_EVENT} />
       </section>
 
-      {/* 4. Stats Section (Impact Metrics) */}
-      <StatsSection />
-
-      {/* 5. Featured Section (Projects & Events) */}
+      {/* 4. Featured Section (Projects & Events) */}
       <FeaturedSection />
 
-      {/* 6. Student-Led NVIDIA Communities */}
+      {/* 5. Student-Led NVIDIA Communities */}
       <CommunitiesSection />
 
-      {/* 7. Join Membership Banner */}
+      {/* 6. Join Membership Banner */}
       <JoinCTA />
     </>
   )
