@@ -97,7 +97,22 @@ Detailed sprint plan with issue templates and acceptance criteria.
 - [ ] WebGL background particles (custom shader)
 - [ ] Intersection Observer to pause rendering when off-screen
 
-#### 1.3 About + Statistics Section
+#### 1.3 Interactive Terminal (CLI Demo)
+- [ ] Terminal window with macOS-style title bar (red/yellow/green dots)
+- [ ] Prompt: `nvidia-sc@website:~$ ` with blinking cursor
+- [ ] Core commands: help, about, events, team, stats, clear
+- [ ] Data commands: events (list), team (list), stats (counters)
+- [ ] Easter eggs: sudo, hack, gpu, nvidia-smi, matrix, exit, ls, cd, cat
+- [ ] Typing animation for output (30ms per character)
+- [ ] Command history (up/down arrow keys)
+- [ ] Tab completion for command names
+- [ ] CRT scan-line overlay effect (subtle, toggleable)
+- [ ] Matrix rain effect (3-second fallback for `matrix` command)
+- [ ] Mobile responsive (full-width, 13px font)
+- [ ] GSAP scroll-triggered entrance (slide up + fade in)
+- [ ] Place below Hero, above About section
+
+#### 1.4 About + Statistics Section
 - [ ] About section with club description text
 - [ ] GSAP scroll-triggered fade-in animation
 - [ ] Statistics counters (animated number counting on scroll)
@@ -105,14 +120,14 @@ Detailed sprint plan with issue templates and acceptance criteria.
 - [ ] Responsive grid layout
 - [ ] NVIDIA green accent elements
 
-#### 1.4 Featured Sections
+#### 1.5 Featured Sections
 - [ ] Featured events carousel (horizontal scroll)
 - [ ] Featured team members grid (3-4 cards)
 - [ ] Upcoming events highlight
 - [ ] "Join the Club" CTA section with gradient background
 - [ ] GSAP stagger animations for card entrances
 
-#### 1.5 Footer
+#### 1.6 Footer
 - [ ] Multi-column footer layout
 - [ ] Club info, quick links, social media icons
 - [ ] Newsletter signup form (optional)

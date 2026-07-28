@@ -36,6 +36,7 @@ website/
 │   │   ├── assets/                  # Images, fonts, 3D model files
 │   │   ├── components/
 │   │   │   ├── 3d/                  # Three.js / R3F components (DGX model, particles)
+│   │   │   │   └── Terminal/        # Interactive CLI terminal component
 │   │   │   ├── sections/            # Landing page sections (Hero, About, Stats, etc.)
 │   │   │   ├── ui/                  # Reusable UI primitives (Button, Card, Modal)
 │   │   │   ├── layout/              # Navbar, Footer, PageWrapper

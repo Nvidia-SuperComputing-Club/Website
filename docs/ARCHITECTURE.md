@@ -61,6 +61,7 @@ App
 │   │   ├── Routes
 │   │   │   ├── HomePage
 │   │   │   │   ├── HeroSection (Three.js DGX model + GSAP)
+│   │   │   │   ├── TerminalSection (Interactive CLI demo)
 │   │   │   │   ├── AboutSection
 │   │   │   │   ├── StatsSection (animated counters)
 │   │   │   │   ├── FeaturedSection

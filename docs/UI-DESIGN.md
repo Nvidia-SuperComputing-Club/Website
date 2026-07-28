@@ -168,6 +168,64 @@ Mobile (< 768px):    4-column grid, fluid width, 16px gutters
 }
 ```
 
+### Interactive Terminal (CLI Demo)
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  ●  ●  ●    nvidia-sc@website                            │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  nvidia-sc@website:~$ help                               │
+│                                                          │
+│  Available commands:                                     │
+│    help        Show this help message                    │
+│    about       About the NVIDIA SC Club                  │
+│    events      List upcoming events                      │
+│    team        List team members                         │
+│    stats       Show club statistics                      │
+│    clear       Clear the terminal                        │
+│                                                          │
+│  Fun commands:                                           │
+│    nvidia-smi  GPU utilization report                    │
+│    hack        Initiate hacking sequence                 │
+│    sudo        Try it ; )                                │
+│                                                          │
+│  nvidia-sc@website:~$ █                                  │
+└──────────────────────────────────────────────────────────┘
+```
+
+#### Terminal Specs
+
+| Property | Value |
+|----------|-------|
+| Background | `#0A0A0A` with scan-line overlay |
+| Font | JetBrains Mono / Fira Code, 14px (13px mobile) |
+| Output color | `#76B900` (NVIDIA green) |
+| Input color | `#FFFFFF` (white) |
+| Prompt | `nvidia-sc@website:~$ ` in green |
+| Cursor | Blinking block, 530ms toggle |
+| Window chrome | macOS-style title bar with red/yellow/green dots |
+| Height | ~500px desktop, ~400px mobile |
+| Width | max-width 800px, centered |
+| Scan-lines | Subtle repeating-linear-gradient, opacity 0.03 |
+
+#### Effects
+
+| Effect | Description |
+|--------|-------------|
+| Typing animation | 30ms per character for output, configurable |
+| Scan-lines | CRT overlay, toggleable |
+| Matrix rain | 3-second fallback animation for `matrix` command |
+| Hack effect | Scrolling hex/binary text for `hack` command |
+| GPU bar | Animated progress bar for `gpu` / `nvidia-smi` |
+
+#### Placement
+
+- Below Hero Section, above About Section
+- Section title: "Explore the Club" or `interact with nvidia-sc`
+- GSAP entrance: terminal slides up (y: 80 → 0) + fades in on scroll
+- Full-width section, terminal centered (max-width 800px)
+
 ---
 
 ## 3D & Motion Specification
