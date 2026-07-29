@@ -18,11 +18,9 @@ The landing page is designed to be an **Awwwards-caliber** experience with a 3D 
 | ---------------- | ------------------------------------------------- |
 | **Frontend**     | React 19, Vite, Tailwind CSS, React Router DOM    |
 | **3D / Motion**  | Three.js, React Three Fiber, GSAP, WebGL          |
-| **Backend**      | Node.js, Express.js                               |
-| **Database**     | MongoDB (Mongoose ODM)                             |
+| **Backend & DB** | Supabase (PostgreSQL, Auth, Auto-generated APIs) |
+| **Auth**         | Supabase Auth (Google, GitHub, Email/Password)    |
 | **Storage**      | Cloudinary (images/media)                          |
-| **Auth**         | JWT + Passport.js, Google OAuth 2.0, GitHub OAuth 2.0 |
-| **API**          | REST API                                          |
 
 ---
 
@@ -57,17 +55,6 @@ website/
 │   ├── vite.config.js
 │   └── .env.example
 │
-├── server/                          # Backend (Node.js + Express)
-│   ├── config/                      # MongoDB connection, env vars, CORS config, Passport
-│   ├── controllers/                 # Route handlers (events, team, auth, upload)
-│   ├── middleware/                   # Auth middleware, validation, error handling
-│   ├── routes/                      # Express route definitions
-│   ├── services/                    # Business logic (Mongoose queries, Cloudinary ops)
-│   ├── utils/                       # Helpers (response formatters, validators)
-│   ├── index.js                     # Server entry point
-│   ├── package.json
-│   └── .env.example
-│
 ├── docs/                            # Project documentation
 │   ├── ARCHITECTURE.md              # System architecture & data flow
 │   ├── API.md                       # REST API reference
@@ -90,8 +77,7 @@ website/
 
 - **Node.js** v18+ (recommended: v20 LTS)
 - **npm** or **yarn**
-- **MongoDB** (local install or MongoDB Atlas account)
-- **Cloudinary** account (for image/media storage)
+- **Supabase** account (for backend, database, and auth)
 - **Git**
 
 ### 1. Clone the Repository
@@ -110,37 +96,13 @@ cp .env.example .env    # Fill in your API URL
 npm run dev             # Starts on http://localhost:5173
 ```
 
-### 3. Setup Backend
-
-```bash
-cd server
-npm install
-cp .env.example .env    # Fill in MongoDB URI, JWT secret, and port
-node index.js           # Starts on http://localhost:5000
-```
-
-### 4. Environment Variables
+### 3. Environment Variables
 
 #### Client `.env`
 
 ```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-#### Server `.env`
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/nvidia-sc-website
-JWT_SECRET=your-jwt-secret-key
-CORS_ORIGIN=http://localhost:5173
-GOOGLE_CLIENT_ID=your-google-oauth-client-id
-GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
-GITHUB_CLIENT_ID=your-github-oauth-client-id
-GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
-CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
-CLOUDINARY_API_KEY=your-cloudinary-api-key
-CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 ---
@@ -157,13 +119,6 @@ CLOUDINARY_API_SECRET=your-cloudinary-api-secret
 | `npm run lint`      | Run ESLint                   |
 | `npm run format`    | Format with Prettier         |
 
-### Backend (`server/`)
-
-| Command             | Description                  |
-| ------------------- | ---------------------------- |
-| `node index.js`     | Start Express server         |
-| `npm run dev`       | Start with nodemon (dev)     |
-| `npm run lint`      | Run ESLint                   |
 
 ---
 

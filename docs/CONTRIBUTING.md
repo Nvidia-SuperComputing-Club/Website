@@ -31,7 +31,7 @@ Thank you for your interest in contributing to the NVIDIA Super Computing Club w
 
 ### Prerequisites
 
-- Node.js v18+
+- Supabase v18+
 - npm or yarn
 - Git
 
@@ -45,7 +45,7 @@ cd nvidia-sc-website
 # Setup frontend
 cd client
 npm install
-cp .env.example .env   # Fill in your MongoDB URI and env vars
+cp .env.example .env   # Fill in your Supabase URI and env vars
 npm run dev
 
 # In a second terminal, setup backend
@@ -57,7 +57,7 @@ node index.js
 
 ### Getting Test Credentials
 
-Ask a maintainer for the shared `.env` values (MongoDB URI, JWT secret, OAuth credentials). Never commit real keys.
+Ask a maintainer for the shared `.env` values (Supabase URI, JWT secret, OAuth credentials). Never commit real keys.
 
 ---
 
@@ -94,7 +94,7 @@ feat(landing): add GSAP scroll animation to hero section
 fix(auth): handle expired refresh token gracefully
 docs(api): add events endpoint documentation
 style(ui): fix button hover state on mobile
-refactor(server): extract MongoDB connection to config/
+refactor(server): extract Supabase connection to config/
 ```
 
 ### Rules
@@ -170,7 +170,7 @@ Describe the tests you ran and the environments.
 ### Backend
 
 - Controllers handle HTTP — no business logic in controllers.
-- Services contain business logic and Mongoose queries.
+- Services contain business logic and Supabase Client queries.
 - Use **async/await** — no raw `.then()` chains.
 - Always validate input before processing.
 

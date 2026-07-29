@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Calendar, ChevronRight } from 'lucide-react'
+import { useInView } from '../../hooks/useScrollAnimation.js'
 
 const FEATURED_EVENTS = [
   {
@@ -26,9 +27,15 @@ const FEATURED_EVENTS = [
 ]
 
 export default function FeaturedSection() {
+  const [headerRef, headerVisible] = useInView()
+  const [cardsRef, cardsVisible] = useInView({ threshold: 0.1 })
+
   return (
     <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" aria-label="Featured events">
-      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div
+        ref={headerRef}
+        className={`flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 border-b border-white/10 pb-6 reveal ${headerVisible ? 'is-visible' : ''}`}
+      >
         <div className="space-y-2">
           <span className="text-xs font-mono text-nvidia uppercase tracking-wider">FEATURED HIGHLIGHTS</span>
           <h2 className="text-3xl font-display font-bold text-white">UPCOMING EVENTS</h2>
@@ -39,9 +46,13 @@ export default function FeaturedSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
+      <div
+        ref={cardsRef}
+        className={`grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children ${cardsVisible ? 'is-visible' : ''}`}
+        role="list"
+      >
         {FEATURED_EVENTS.map((event) => (
-          <article key={event.id} className="card-nvidia p-6 space-y-4 flex flex-col justify-between group" role="listitem">
+          <article key={event.id} className="stagger-child card-nvidia p-6 space-y-4 flex flex-col justify-between group" role="listitem">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-nvidia bg-nvidia/10 px-2.5 py-1 rounded border border-nvidia/20 font-semibold">
