@@ -143,7 +143,7 @@ Figma → Issue → Assign Contributor → Feature Branch → Development → Pu
 
 | Sprint  | Focus                         | Key Deliverables                                 |
 | ------- | ----------------------------- | ------------------------------------------------ |
-| Sprint 0| Setup                         | Figma, React+Tailwind, Express, MongoDB, OAuth |
+| Sprint 0| Setup                         | Figma, React+Tailwind, Supabase, OAuth           |
 | Sprint 1| Landing Page                  | Navbar, Hero, About+Stats, Featured, Footer      |
 | Sprint 2| Pages                         | Events Page, Team Page                           |
 | Sprint 3| Admin CMS                     | Admin Login, Homepage/Events/Team CMS            |
