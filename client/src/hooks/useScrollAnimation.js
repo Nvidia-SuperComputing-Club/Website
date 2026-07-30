@@ -1,186 +1,72 @@
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
+import { useEffect, useRef, useState } from 'react'
 
 /**
- * useScrollReveal — GSAP scroll-triggered entrance animation
- * Matches UI-DESIGN.md: y: 60 → 0, opacity 0 → 1, 0.8s, power2.out
+ * useInView — returns [ref, isVisible]
+ * Uses IntersectionObserver. When the element enters the viewport,
+ * isVisible becomes true (and stays true — one-shot reveal).
  */
-export function useScrollReveal(options = {}) {
+export function useInView(options = {}) {
   const ref = useRef(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
-    const ctx = gsap.context(() => {
-      gsap.from(el, {
-        scrollTrigger: {
-          trigger: el,
-          start: options.start ?? 'top 80%',
-          end: options.end ?? 'top 20%',
-          toggleActions: 'play none none reverse',
-          ...options.scrollTrigger,
-        },
-        y: options.y ?? 60,
-        opacity: 0,
-        duration: options.duration ?? 0.8,
-        ease: options.ease ?? 'power2.out',
-        delay: options.delay ?? 0,
-      })
-    })
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(el) // fire once
+        }
+      },
+      {
+        threshold: options.threshold ?? 0.15,
+        rootMargin: options.rootMargin ?? '0px 0px -40px 0px',
+      }
+    )
 
-    return () => ctx.revert()
-  }, [])
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [options.threshold, options.rootMargin])
 
-  return ref
+  return [ref, isVisible]
 }
 
 /**
- * useStaggerReveal — stagger entrance for card grids
- * Matches UI-DESIGN.md: stagger card entrances
- */
-export function useStaggerReveal(stagger = 0.1, options = {}) {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const ctx = gsap.context(() => {
-      const items = el.querySelectorAll('.stagger-item')
-      if (!items.length) return
-
-      gsap.from(items, {
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 75%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.6,
-        stagger,
-        ease: 'power2.out',
-      })
-    })
-
-    return () => ctx.revert()
-  }, [stagger])
-
-  return ref
-}
-
-/**
- * useCountUp — animated number counting on scroll
- * Matches UI-DESIGN.md Counter Animation spec
+ * useCountUp — animated number counting triggered when element enters view.
+ * Place data-target="150" data-suffix="+" on the number span.
  */
 export function useCountUp() {
-  const ref = useRef(null)
+  const [ref, isVisible] = useInView({ threshold: 0.3 })
+  const hasRun = useRef(false)
 
   useEffect(() => {
+    if (!isVisible || hasRun.current) return
+    hasRun.current = true
+
     const el = ref.current
     if (!el) return
 
-    const counters = el.querySelectorAll('.stat-number[data-target]')
-    if (!counters.length) return
+    const counters = el.querySelectorAll('[data-target]')
+    counters.forEach((counter) => {
+      const target = parseInt(counter.dataset.target, 10)
+      const suffix = counter.dataset.suffix ?? ''
+      const duration = 2000
+      const startTime = performance.now()
 
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top 70%',
-        once: true,
-        onEnter: () => {
-          counters.forEach((counter) => {
-            const target = parseInt(counter.dataset.target, 10)
-            const obj = { val: 0 }
-            gsap.to(obj, {
-              val: target,
-              duration: 2,
-              ease: 'power1.inOut',
-              snap: { val: 1 },
-              onUpdate: () => {
-                counter.textContent = Math.round(obj.val) + (counter.dataset.suffix ?? '')
-              },
-            })
-          })
-        },
-      })
+      const tick = (now) => {
+        const elapsed = now - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        // easeOutCubic
+        const eased = 1 - Math.pow(1 - progress, 3)
+        counter.textContent = Math.round(eased * target) + suffix
+        if (progress < 1) requestAnimationFrame(tick)
+      }
+
+      requestAnimationFrame(tick)
     })
-
-    return () => ctx.revert()
-  }, [])
-
-  return ref
-}
-
-/**
- * useHeroAnimation — staggered letter reveal on load
- * Matches UI-DESIGN.md Hero Text Reveal spec
- */
-export function useHeroAnimation() {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.3 })
-
-      tl.from('.hero-badge', {
-        y: -20,
-        opacity: 0,
-        duration: 0.5,
-        ease: 'power2.out',
-      })
-        .from(
-          '.hero-title',
-          {
-            y: 60,
-            opacity: 0,
-            duration: 0.8,
-            ease: 'power2.out',
-          },
-          '-=0.2'
-        )
-        .from(
-          '.hero-subtitle',
-          {
-            y: 30,
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-          },
-          '-=0.3'
-        )
-        .from(
-          '.hero-cta',
-          {
-            scale: 0.9,
-            opacity: 0,
-            duration: 0.5,
-            ease: 'elastic.out(1, 0.5)',
-          },
-          '-=0.2'
-        )
-        .from(
-          '.hero-stats',
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: 'power2.out',
-          },
-          '-=0.3'
-        )
-    })
-
-    return () => ctx.revert()
-  }, [])
+  }, [isVisible, ref])
 
   return ref
 }

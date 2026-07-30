@@ -1,9 +1,15 @@
 import { Link } from 'react-router-dom'
+import { useInView } from '../../hooks/useScrollAnimation.js'
 
 export default function JoinCTA() {
+  const [ref, isVisible] = useInView({ threshold: 0.2 })
+
   return (
     <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="relative rounded-3xl bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-950 border border-nvidia/40 p-8 sm:p-14 overflow-hidden shadow-nvidia-glow-lg text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
+      <div
+        ref={ref}
+        className={`relative rounded-3xl bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-950 border border-nvidia/40 p-8 sm:p-14 overflow-hidden shadow-nvidia-glow-lg text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8 reveal-scale ${isVisible ? 'is-visible' : ''}`}
+      >
         <div className="space-y-3 max-w-xl">
           <span className="px-3 py-1 rounded-full bg-nvidia/10 border border-nvidia/30 text-nvidia text-xs font-mono inline-block">
             GALGOTIAS UNIVERSITY STUDENT INTAKE

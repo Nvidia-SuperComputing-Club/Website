@@ -29,9 +29,9 @@ Detailed sprint plan with issue templates and acceptance criteria.
 - [ ] Create `.env.example` with all required vars
 - [ ] Verify `npm run dev` starts on port 5173
 
-#### 0.3 Setup Express Backend
-- [ ] Initialize Node.js project in `server/`
-- [ ] Install Express, CORS, dotenv, helmet
+#### 0.3 Setup Supabase Backend
+- [ ] Initialize Supabase project in `server/`
+- [ ] Install Supabase, CORS, dotenv, helmet
 - [ ] Create `index.js` entry point with middleware
 - [ ] Set up route structure (`routes/events.js`, etc.)
 - [ ] Create controller/service layer pattern
@@ -39,20 +39,20 @@ Detailed sprint plan with issue templates and acceptance criteria.
 - [ ] Create `.env.example`
 - [ ] Verify `node index.js` starts on port 5000
 
-#### 0.4 Configure MongoDB
-- [ ] Install MongoDB locally or create MongoDB Atlas cluster
+#### 0.4 Configure Supabase
+- [ ] Install Supabase locally or create Supabase Atlas cluster
 - [ ] Create database: `nvidia-sc-website`
 - [ ] Create collections: `events`, `teams`, `homepagecontents`, `adminusers`
-- [ ] Install Mongoose in the backend
-- [ ] Create Mongoose models (Event, Team, HomepageContent, AdminUser)
-- [ ] Set up MongoDB connection with retry logic
+- [ ] Install Supabase Client in the backend
+- [ ] Create Supabase Client models (Event, Team, HomepageContent, AdminUser)
+- [ ] Set up Supabase connection with retry logic
 - [ ] Seed initial admin user
 - [ ] Test connection with a simple query
 
 #### 0.5 Setup OAuth
 - [ ] Create Google OAuth 2.0 credentials
 - [ ] Create GitHub OAuth App credentials
-- [ ] Configure Passport.js strategies (Google + GitHub)
+- [ ] Configure Supabase Auth strategies (Google + GitHub)
 - [ ] Add callback URLs to OAuth provider settings
 - [ ] Store credentials in `.env` files
 - [ ] Test login flow (even without UI)

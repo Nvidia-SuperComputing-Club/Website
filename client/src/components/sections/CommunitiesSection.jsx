@@ -1,10 +1,17 @@
 import { Building2, GraduationCap, Rocket, Users } from 'lucide-react'
+import { useInView } from '../../hooks/useScrollAnimation.js'
 
 export default function CommunitiesSection() {
+  const [headerRef, headerVisible] = useInView()
+  const [cardsRef, cardsVisible] = useInView({ threshold: 0.1 })
+
   return (
     <section className="py-20 bg-obsidian-900/50 border-y border-white/5 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="text-center space-y-3 max-w-3xl mx-auto">
+        <div
+          ref={headerRef}
+          className={`text-center space-y-3 max-w-3xl mx-auto reveal ${headerVisible ? 'is-visible' : ''}`}
+        >
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-nvidia/10 border border-nvidia/30 text-nvidia text-xs font-mono">
             <Building2 className="w-3.5 h-3.5" />
             <span>GALGOTIAS UNIVERSITY PARTNERSHIP</span>
@@ -17,9 +24,12 @@ export default function CommunitiesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div
+          ref={cardsRef}
+          className={`grid grid-cols-1 md:grid-cols-3 gap-8 stagger-children ${cardsVisible ? 'is-visible' : ''}`}
+        >
           {/* Card 1: NVIDIA DLI Student Chapters */}
-          <div className="nvidia-card rounded-2xl p-8 space-y-4 flex flex-col justify-between border border-nvidia/30 bg-obsidian-950/80 shadow-nvidia-glow">
+          <div className="stagger-child nvidia-card rounded-2xl p-8 space-y-4 flex flex-col justify-between border border-nvidia/30 bg-obsidian-950/80 shadow-nvidia-glow">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-xl bg-nvidia/10 border border-nvidia/30 text-nvidia flex items-center justify-center">
                 <GraduationCap className="w-6 h-6" />
@@ -37,7 +47,7 @@ export default function CommunitiesSection() {
           </div>
 
           {/* Card 2: AI & Data Science Societies */}
-          <div className="nvidia-card rounded-2xl p-8 space-y-4 flex flex-col justify-between border border-cyber-cyan/30 bg-obsidian-950/80">
+          <div className="stagger-child nvidia-card rounded-2xl p-8 space-y-4 flex flex-col justify-between border border-cyber-cyan/30 bg-obsidian-950/80">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan flex items-center justify-center">
                 <Rocket className="w-6 h-6" />
@@ -55,7 +65,7 @@ export default function CommunitiesSection() {
           </div>
 
           {/* Card 3: Campus Ambassador Programs */}
-          <div className="nvidia-card rounded-2xl p-8 space-y-4 flex flex-col justify-between border border-white/10 bg-obsidian-950/80">
+          <div className="stagger-child nvidia-card rounded-2xl p-8 space-y-4 flex flex-col justify-between border border-white/10 bg-obsidian-950/80">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 text-white flex items-center justify-center">
                 <Users className="w-6 h-6 text-nvidia" />
