@@ -1,4 +1,5 @@
 import { Server, Cpu, Sparkles, Flame, Terminal } from 'lucide-react'
+import { useInView } from '../../hooks/useScrollAnimation.js'
 
 const PILLARS = [
   {
@@ -28,9 +29,15 @@ const PILLARS = [
 ]
 
 export default function AboutSection() {
+  const [headerRef, headerVisible] = useInView()
+  const [cardsRef, cardsVisible] = useInView({ threshold: 0.1 })
+
   return (
     <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center space-y-3 mb-16">
+      <div
+        ref={headerRef}
+        className={`text-center space-y-3 mb-16 reveal ${headerVisible ? 'is-visible' : ''}`}
+      >
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-nvidia/10 border border-nvidia/30 text-nvidia text-xs font-mono">
           <Terminal className="w-3.5 h-3.5" />
           <span>GALGOTIAS CHAPTER PILLARS</span>
@@ -43,11 +50,14 @@ export default function AboutSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div
+        ref={cardsRef}
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children ${cardsVisible ? 'is-visible' : ''}`}
+      >
         {PILLARS.map((pillar, idx) => {
           const Icon = pillar.icon
           return (
-            <div key={idx} className="nvidia-card rounded-2xl p-6 space-y-4 flex flex-col justify-between group">
+            <div key={idx} className="stagger-child nvidia-card rounded-2xl p-6 space-y-4 flex flex-col justify-between group">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-xl bg-obsidian-950 border border-nvidia/30 flex items-center justify-center text-nvidia group-hover:scale-110 transition-transform">
                   <Icon className="w-6 h-6" />

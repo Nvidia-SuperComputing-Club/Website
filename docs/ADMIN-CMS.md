@@ -21,10 +21,10 @@ The admin CMS allows authorized administrators to manage all website content thr
 
 ### Access Control
 
-- Only users with a record in the `adminusers` MongoDB collection can access the CMS
+- Only users with a record in the `adminusers` Supabase collection can access the CMS
 - Regular users cannot access admin routes — the server checks the JWT `role` field
 - Admin role is checked server-side on every protected API call via auth middleware
-- JWT token expires after 1 hour; client must re-authenticate after expiry
+- Supabase session expires after 1 hour; client must re-authenticate after expiry
 
 ### Login Flow
 
@@ -32,11 +32,11 @@ The admin CMS allows authorized administrators to manage all website content thr
 1. User visits /admin/login
 2. User clicks Google or GitHub button
 3. Frontend calls GET /api/auth/google (or /api/auth/github)
-4. Passport.js redirects to OAuth provider
+4. Supabase Auth redirects to OAuth provider
 5. User authenticates with provider
 6. Provider redirects back to /api/auth/google/callback
-7. Passport.js callback controller finds or creates user in MongoDB adminusers collection
-8. Server generates JWT token with userId, email, role
+7. Supabase Auth callback controller finds or creates user in Supabase adminusers collection
+8. Server generates Supabase session with userId, email, role
 9. JWT is returned to frontend, stored in localStorage
 10. Frontend redirects to /admin/dashboard
 ```
@@ -247,7 +247,7 @@ Manage club team members.
 3. File is sent to `POST /api/upload` as `multipart/form-data`
 4. Server validates with multer, then uploads to Cloudinary
 5. Cloudinary returns the public URL
-6. URL is saved in the MongoDB document field
+6. URL is saved in the Supabase document field
 7. Image is displayed in preview
 
 ### Cloudinary Folder Structure
@@ -320,7 +320,7 @@ nvidia-sc-website/
 ## Data Flow
 
 ```
-Admin Action → React State Update → API Call → Express → Mongoose → MongoDB → Response → UI Update
+Admin Action → React State Update → API Call → Supabase → Supabase Client → Supabase → Response → UI Update
                                      ↓
                                Optimistic Update
                             (UI updates immediately,
@@ -330,7 +330,7 @@ Admin Action → React State Update → API Call → Express → Mongoose → Mo
 - Forms use controlled components (React state)
 - API calls go through `client/src/services/` functions
 - Services call the backend REST API
-- Backend validates, then runs Mongoose queries against MongoDB
+- Backend validates, then runs Supabase Client queries against Supabase
 - Response flows back to the UI
 - Optimistic updates for better UX (toggle featured, delete)
 
