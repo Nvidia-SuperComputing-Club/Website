@@ -2,8 +2,42 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ChevronDown, ArrowRight, Zap, Building2 } from 'lucide-react';
-import HeroScene from '../3d/HeroScene';
 import { CircuitCanvas } from '../3d/CircuitCanvas.jsx';
+
+const HeroScene = React.lazy(() => import('../3d/HeroScene'));
+
+function HeroPlaceholder() {
+  return (
+    <div className="w-full h-full min-h-[350px] md:min-h-[500px] flex flex-col items-center justify-center relative select-none">
+      {/* Outer bounding box border of the server chassis */}
+      <div className="w-[200px] h-[100px] md:w-[260px] md:h-[130px] border border-dashed border-nvidia/35 rounded-lg flex flex-col justify-between p-2.5 relative animate-pulse">
+        {/* Front green glow line accents */}
+        <div className="w-full h-0.5 bg-nvidia/40" />
+        {/* Decorative fans placeholders */}
+        <div className="flex justify-around items-center w-full">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-nvidia/30 flex items-center justify-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-nvidia/40 animate-ping" />
+            </div>
+          ))}
+        </div>
+        <div className="w-full h-0.5 bg-nvidia/40" />
+        
+        {/* Indicator lights */}
+        <div className="absolute top-2 left-4 flex gap-1">
+          <div className="w-1 h-1 rounded-full bg-nvidia/65" />
+          <div className="w-1 h-1 rounded-full bg-nvidia/65" />
+          <div className="w-1 h-1 rounded-full bg-red-500/50" />
+        </div>
+      </div>
+      
+      {/* Loading micro-text overlays */}
+      <div className="absolute bottom-4 text-[10px] font-mono text-nvidia/50 tracking-widest uppercase">
+        Initializing 3D Environment...
+      </div>
+    </div>
+  );
+}
 
 const HERO_STATS = [
   { target: 150, suffix: '+', label: 'MEMBERS',       color: 'text-nvidia',     border: 'border-nvidia/40 shadow-nvidia-glow' },
@@ -190,7 +224,9 @@ export default function HeroSection() {
 
         {/* Right Side: R3F Canvas Container */}
         <div className="md:col-span-6 w-full flex justify-center items-center h-[350px] md:h-[500px]">
-          <HeroScene isMobile={isMobile} />
+          <React.Suspense fallback={<HeroPlaceholder />}>
+            <HeroScene isMobile={isMobile} />
+          </React.Suspense>
         </div>
 
       </div>

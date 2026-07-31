@@ -18,6 +18,8 @@ export default function Footer() {
                 <img
                   src={LOGO_URL}
                   alt="NVIDIA AI & Supercomputing Club Logo"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover rounded-lg"
                 />
               </div>

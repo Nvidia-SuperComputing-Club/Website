@@ -143,7 +143,7 @@ export default function TeamCMSPage() {
             }`}>
               <div className="flex items-start gap-3">
                 {m.image_url ? (
-                  <img src={m.image_url} alt={m.name} className="w-12 h-12 rounded-full border-2 border-nvidia/40 object-cover shrink-0" />
+                  <img src={m.image_url?.includes('cloudinary.com') ? m.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : m.image_url} alt={m.name} loading="lazy" decoding="async" className="w-12 h-12 rounded-full border-2 border-nvidia/40 object-cover shrink-0" />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-nvidia/10 border-2 border-nvidia/30 flex items-center justify-center shrink-0">
                     <User className="w-6 h-6 text-nvidia/60" />

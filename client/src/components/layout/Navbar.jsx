@@ -40,6 +40,8 @@ export default function Navbar() {
               <img
                 src={LOGO_URL}
                 alt="NVIDIA AI & Supercomputing Club Logo"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
               />
             </div>

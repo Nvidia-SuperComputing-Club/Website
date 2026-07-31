@@ -41,8 +41,8 @@ const MOCK_EVENTS = [
     type: 'workshop',
     summary: 'Foundational workshop on threads, blocks, grids, and writing your first CUDA C++ vector addition kernel.',
     gallery: [
-      'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fm=webp&fit=crop&w=600&q=75',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fm=webp&fit=crop&w=600&q=75',
     ],
   },
   {
@@ -54,7 +54,7 @@ const MOCK_EVENTS = [
     type: 'talk',
     summary: 'Official NVIDIA Deep Learning Institute certification workshop. Students earned globally recognized credentials in accelerated computing.',
     gallery: [
-      'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fm=webp&fit=crop&w=600&q=75',
     ],
   },
 ]
@@ -236,7 +236,7 @@ export default function EventsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto p-1">
                 {activeGalleryImages.map((imgUrl, idx) => (
                   <div key={idx} className="rounded-xl overflow-hidden border border-white/10 bg-obsidian-950 aspect-video">
-                    <img src={imgUrl} alt={`Gallery ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                    <img src={imgUrl} alt={`Gallery ${idx}`} loading="lazy" decoding="async" className="w-full h-full object-cover hover:scale-105 transition-transform" />
                   </div>
                 ))}
               </div>
