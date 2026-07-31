@@ -86,6 +86,19 @@ export default function LoginPage() {
             Sign in with GitHub
           </button>
 
+          {import.meta.env.DEV && (
+            <button
+              id="admin-login-bypass"
+              onClick={() => {
+                localStorage.setItem('dev_admin_bypass', 'true')
+                navigate('/admin/dashboard')
+              }}
+              className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-dashed border-nvidia/40 text-nvidia font-mono text-xs font-bold hover:bg-nvidia/10 transition-colors"
+            >
+              Development Bypass Login
+            </button>
+          )}
+
           <p className="text-center text-[10px] font-mono text-gray-600 pt-2">
             Access is restricted to club administrators.<br />
             Unauthorized access attempts are logged.

@@ -20,22 +20,24 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
+    const devBypass = import.meta.env.DEV && localStorage.getItem('dev_admin_bypass') === 'true'
+
     // Auth guard — redirect to login if no active session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+      if (!session && !devBypass) {
         navigate('/admin/login')
       } else {
-        setUser(session.user)
+        setUser(session?.user || { email: 'dev-admin@nvidia.club' })
       }
       setLoading(false)
     })
 
     // Listen for auth changes (logout etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+      if (!session && !devBypass) {
         navigate('/admin/login')
       } else {
-        setUser(session.user)
+        setUser(session?.user || { email: 'dev-admin@nvidia.club' })
       }
     })
 
@@ -43,6 +45,7 @@ export default function AdminLayout() {
   }, [navigate])
 
   const handleLogout = async () => {
+    localStorage.removeItem('dev_admin_bypass')
     await supabase.auth.signOut()
     navigate('/admin/login')
   }
