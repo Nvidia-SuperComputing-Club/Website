@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import MemberForm from '../../components/admin/MemberForm.jsx'
 import {
-  Plus, Pencil, Trash2, Search, X, Save,
-  User, Briefcase, AlignLeft, Image as ImageIcon,
-  Github, Linkedin, Twitter, Eye, EyeOff
+  Plus, Pencil, Trash2, Search, X,
+  User, Eye, EyeOff, LayoutGrid, Table
 } from 'lucide-react'
 
 const EMPTY_FORM = {
@@ -32,6 +32,8 @@ export default function TeamCMSPage() {
   const [editId, setEditId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState({ msg: '', type: 'success' })
+  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'table'
+  const [draggedIdx, setDraggedIdx] = useState(null)
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type })
@@ -82,11 +84,12 @@ export default function TeamCMSPage() {
     fetchMembers()
   }
 
+  // Soft Delete - Updates is_active status to false
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to remove "${name}" from the team?`)) return
-    const { error } = await supabase.from('team_members').delete().eq('id', id)
+    if (!window.confirm(`Are you sure you want to remove "${name}" from the team? (This will hide them from the public page)`)) return
+    const { error } = await supabase.from('team_members').update({ is_active: false }).eq('id', id)
     if (error) { showToast(error.message, 'error'); return }
-    showToast('Member removed')
+    showToast('Member removed (soft-deleted)')
     fetchMembers()
   }
 
@@ -94,6 +97,55 @@ export default function TeamCMSPage() {
     const { error } = await supabase.from('team_members').update({ is_active: !current }).eq('id', id)
     if (error) { showToast(error.message, 'error'); return }
     setMembers(members.map(m => m.id === id ? { ...m, is_active: !current } : m))
+    showToast(!current ? 'Member is now visible' : 'Member is now hidden')
+  }
+
+  // HTML5 Native Drag & Drop Handlers
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = async (e, index) => {
+    e.preventDefault()
+    if (draggedIdx === null || draggedIdx === index) return
+
+    const newMembers = [...members]
+    const [draggedItem] = newMembers.splice(draggedIdx, 1)
+    newMembers.splice(index, 0, draggedItem)
+
+    // Optimistically update state
+    setMembers(newMembers)
+
+    // Map new ordered positions to display_order values
+    const updates = newMembers.map((m, idx) => ({
+      id: m.id,
+      name: m.name,
+      role: m.role,
+      bio: m.bio,
+      image_url: m.image_url,
+      github_url: m.github_url,
+      linkedin_url: m.linkedin_url,
+      twitter_url: m.twitter_url,
+      is_active: m.is_active,
+      display_order: idx + 1
+    }))
+
+    const { error } = await supabase.from('team_members').upsert(updates)
+    if (error) {
+      showToast('Failed to save display order: ' + error.message, 'error')
+      fetchMembers() // Rollback on error
+    } else {
+      showToast('Display order updated successfully')
+    }
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null)
   }
 
   const filtered = members.filter(m =>
@@ -120,30 +172,76 @@ export default function TeamCMSPage() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-        <input
-          type="text" placeholder="Search members..."
-          value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-bg-secondary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors"
-        />
+      {/* Controls: Search and Layout Toggles */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Search */}
+        <div className="relative max-w-sm w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <input
+            type="text" placeholder="Search members..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-bg-secondary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors"
+          />
+        </div>
+
+        {/* Grid/Table view toggler */}
+        <div className="flex bg-obsidian-950 p-1 rounded-xl border border-white/5 shrink-0 self-start sm:self-center">
+          <button 
+            onClick={() => setViewMode('grid')}
+            title="Grid view"
+            className={`p-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+              viewMode === 'grid'
+                ? 'bg-nvidia text-black shadow-nvidia-glow'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Grid</span>
+          </button>
+          <button 
+            onClick={() => setViewMode('table')}
+            title="Table view"
+            className={`p-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+              viewMode === 'table'
+                ? 'bg-nvidia text-black shadow-nvidia-glow'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Table className="w-3.5 h-3.5" />
+            <span>Table</span>
+          </button>
+        </div>
       </div>
 
-      {/* Grid */}
+      {/* Main Content Area */}
       {loading ? (
         <p className="text-center text-gray-500 font-mono text-sm py-16">Loading team...</p>
       ) : filtered.length === 0 ? (
         <p className="text-center text-gray-500 font-mono text-sm py-16">No members found.</p>
-      ) : (
+      ) : viewMode === 'grid' ? (
+        /* GRID VIEW */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(m => (
-            <div key={m.id} className={`bg-bg-secondary border rounded-xl p-5 space-y-3 transition-all ${
-              m.is_active ? 'border-white/10' : 'border-white/5 opacity-60'
-            }`}>
+          {filtered.map((m, idx) => (
+            <div 
+              key={m.id} 
+              draggable
+              onDragStart={e => handleDragStart(e, idx)}
+              onDragOver={e => handleDragOver(e, idx)}
+              onDrop={e => handleDrop(e, idx)}
+              onDragEnd={handleDragEnd}
+              className={`bg-bg-secondary border rounded-xl p-5 space-y-3 transition-all cursor-move ${
+                m.is_active ? 'border-white/10 hover:border-nvidia/40' : 'border-white/5 opacity-60'
+              }`}
+            >
               <div className="flex items-start gap-3">
                 {m.image_url ? (
-                  <img src={m.image_url?.includes('cloudinary.com') ? m.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : m.image_url} alt={m.name} loading="lazy" decoding="async" className="w-12 h-12 rounded-full border-2 border-nvidia/40 object-cover shrink-0" />
+                  <img 
+                    src={m.image_url?.includes('cloudinary.com') ? m.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : m.image_url} 
+                    alt={m.name} 
+                    loading="lazy" 
+                    decoding="async" 
+                    className="w-12 h-12 rounded-full border-2 border-nvidia/40 object-cover shrink-0" 
+                  />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-nvidia/10 border-2 border-nvidia/30 flex items-center justify-center shrink-0">
                     <User className="w-6 h-6 text-nvidia/60" />
@@ -155,8 +253,9 @@ export default function TeamCMSPage() {
                   <p className="text-[10px] font-mono text-gray-500">Order: {m.display_order}</p>
                 </div>
               </div>
-              {m.bio && <p className="text-xs text-gray-400 font-sans line-clamp-2">{m.bio}</p>}
-              <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+              {m.bio && <p className="text-xs text-gray-400 font-sans line-clamp-2 leading-relaxed">{m.bio}</p>}
+              
+              <div className="flex items-center gap-2 pt-2.5 border-t border-white/5">
                 <button onClick={() => openEdit(m)} title="Edit"
                   className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                   <Pencil className="w-3.5 h-3.5" />
@@ -169,6 +268,7 @@ export default function TeamCMSPage() {
                   className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
+                
                 <span className={`ml-auto text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
                   m.is_active
                     ? 'text-nvidia bg-nvidia/10 border-nvidia/20'
@@ -179,6 +279,81 @@ export default function TeamCMSPage() {
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        /* TABLE VIEW */
+        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-bg-secondary">
+          <table className="w-full text-left border-collapse text-xs font-mono">
+            <thead>
+              <tr className="border-b border-white/10 bg-bg-tertiary text-gray-400 font-bold">
+                <th className="p-4 w-16">Order</th>
+                <th className="p-4 w-16">Photo</th>
+                <th className="p-4">Name</th>
+                <th className="p-4">Role</th>
+                <th className="p-4">Bio</th>
+                <th className="p-4 w-28">Status</th>
+                <th className="p-4 w-32 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((m, idx) => (
+                <tr 
+                  key={m.id}
+                  draggable
+                  onDragStart={e => handleDragStart(e, idx)}
+                  onDragOver={e => handleDragOver(e, idx)}
+                  onDrop={e => handleDrop(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  className={`border-b border-white/5 hover:bg-white/5 transition-colors cursor-move ${
+                    m.is_active ? '' : 'opacity-60 bg-white/[0.01]'
+                  }`}
+                >
+                  <td className="p-4 font-bold text-nvidia font-mono">{m.display_order}</td>
+                  <td className="p-4">
+                    {m.image_url ? (
+                      <img 
+                        src={m.image_url?.includes('cloudinary.com') ? m.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : m.image_url} 
+                        alt={m.name} 
+                        className="w-8 h-8 rounded-full border border-nvidia/30 object-cover" 
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-nvidia/10 border border-nvidia/30 flex items-center justify-center">
+                        <User className="w-4 h-4 text-nvidia/50" />
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-4 font-display font-bold text-white text-sm">{m.name}</td>
+                  <td className="p-4 text-gray-300">{m.role}</td>
+                  <td className="p-4 text-gray-400 font-sans max-w-xs truncate">{m.bio || '-'}</td>
+                  <td className="p-4">
+                    <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                      m.is_active
+                        ? 'text-nvidia bg-nvidia/10 border-nvidia/20'
+                        : 'text-gray-500 bg-white/5 border-white/10'
+                    }`}>
+                      {m.is_active ? 'Active' : 'Hidden'}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <button onClick={() => openEdit(m)} title="Edit"
+                        className="p-1.5 rounded bg-obsidian-950 border border-white/5 text-gray-400 hover:text-white hover:border-white/20 transition-all">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => toggleActive(m.id, m.is_active)} title={m.is_active ? 'Hide' : 'Show'}
+                        className="p-1.5 rounded bg-obsidian-950 border border-white/5 text-gray-400 hover:text-nvidia hover:border-nvidia/30 transition-all">
+                        {m.is_active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                      </button>
+                      <button onClick={() => handleDelete(m.id, m.name)} title="Remove"
+                        className="p-1.5 rounded bg-obsidian-950 border border-white/5 text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -194,88 +369,15 @@ export default function TeamCMSPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-nvidia" /> Name *</label>
-                  <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                    placeholder="Full Name"
-                    className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-nvidia" /> Role *</label>
-                  <input required value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}
-                    placeholder="e.g. President"
-                    className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-nvidia" /> Photo URL (Cloudinary)</label>
-                <input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })}
-                  placeholder="https://res.cloudinary.com/..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5"><AlignLeft className="w-3.5 h-3.5 text-nvidia" /> Bio</label>
-                <textarea rows={3} value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })}
-                  placeholder="Short bio..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors resize-none" />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300 flex items-center gap-1"><Github className="w-3 h-3 text-nvidia" /> GitHub</label>
-                  <input value={form.github_url} onChange={e => setForm({ ...form, github_url: e.target.value })}
-                    placeholder="https://github.com/..."
-                    className="w-full px-3 py-2 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300 flex items-center gap-1"><Linkedin className="w-3 h-3 text-nvidia" /> LinkedIn</label>
-                  <input value={form.linkedin_url} onChange={e => setForm({ ...form, linkedin_url: e.target.value })}
-                    placeholder="https://linkedin.com/..."
-                    className="w-full px-3 py-2 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300 flex items-center gap-1"><Twitter className="w-3 h-3 text-nvidia" /> Twitter</label>
-                  <input value={form.twitter_url} onChange={e => setForm({ ...form, twitter_url: e.target.value })}
-                    placeholder="https://x.com/..."
-                    className="w-full px-3 py-2 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300">Display Order</label>
-                  <input type="number" min={0} value={form.display_order}
-                    onChange={e => setForm({ ...form, display_order: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300">Visible on Site</label>
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-tertiary border border-white/10">
-                    <button type="button" onClick={() => setForm({ ...form, is_active: !form.is_active })}
-                      className={`relative w-9 h-5 rounded-full transition-colors ${form.is_active ? 'bg-nvidia' : 'bg-gray-700'}`}>
-                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_active ? 'translate-x-4' : ''}`} />
-                    </button>
-                    <span className="text-xs font-mono text-gray-400">{form.is_active ? 'Active' : 'Hidden'}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={closeModal}
-                  className="px-5 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-xs font-mono text-gray-400 hover:text-white transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-nvidia text-black font-bold text-xs font-mono hover:bg-nvidia-light transition-colors disabled:opacity-50">
-                  <Save className="w-3.5 h-3.5" />
-                  {saving ? 'Saving...' : modal === 'create' ? 'Create Member' : 'Update Member'}
-                </button>
-              </div>
-            </form>
+            
+            <MemberForm
+              form={form}
+              setForm={setForm}
+              onSubmit={handleSave}
+              onCancel={closeModal}
+              saving={saving}
+              modalMode={modal}
+            />
           </div>
         </div>
       )}
