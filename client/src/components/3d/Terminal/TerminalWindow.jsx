@@ -7,7 +7,8 @@ export default function TerminalWindow({
   crtActive,
   onToggleCrt,
   soundActive,
-  onToggleSound
+  onToggleSound,
+  onClose
 }) {
   return (
     <div className="terminal-container flex flex-col w-full h-full rounded-lg overflow-hidden border border-white/10 select-none relative">
@@ -16,7 +17,16 @@ export default function TerminalWindow({
         
         {/* macOS Style Control Buttons */}
         <div className="flex items-center gap-1.5 w-1/4">
-          <span className="title-bar-dot bg-[#FF5F56] border border-[#E0443E]" />
+          {onClose ? (
+            <button 
+              onClick={onClose} 
+              className="title-bar-dot bg-[#FF5F56] border border-[#E0443E] hover:brightness-75 cursor-pointer focus:outline-none transition-all"
+              title="Close Terminal"
+              aria-label="Close terminal"
+            />
+          ) : (
+            <span className="title-bar-dot bg-[#FF5F56] border border-[#E0443E]" />
+          )}
           <span className="title-bar-dot bg-[#FFBD2E] border border-[#DEA123]" />
           <span className="title-bar-dot bg-[#27C93F] border border-[#1AAB29]" />
         </div>
