@@ -9,7 +9,7 @@ import MatrixRain from './effects/MatrixRain';
 import HackEffect from './effects/HackEffect';
 import './styles/terminal.css';
 
-export default function Terminal() {
+export default function Terminal({ onClose }) {
   const {
     lines,
     addLine,
@@ -193,6 +193,7 @@ export default function Terminal() {
         onToggleCrt={() => setCrtEnabled(prev => !prev)}
         soundActive={soundEnabled}
         onToggleSound={() => setSoundEnabled(prev => !prev)}
+        onClose={onClose}
       >
         {/* CRT Overlay effects */}
         <ScanLines active={crtEnabled} />
