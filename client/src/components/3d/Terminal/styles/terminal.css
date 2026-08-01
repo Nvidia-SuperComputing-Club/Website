@@ -1,0 +1,124 @@
+/* Custom Styles for the NVIDIA-SC CLI Terminal Emulator */
+
+.terminal-container {
+  font-family: 'Fira Code', 'Courier New', Courier, monospace;
+  background-color: #0A0A0A;
+  border: 1px solid rgba(118, 185, 0, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(118, 185, 0, 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.terminal-container:focus-within {
+  border-color: rgba(118, 185, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 0 0 40px rgba(118, 185, 0, 0.1);
+}
+
+/* CRT Scanlines Overlay */
+.crt-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Subtle CRT Flicker */
+.crt-flicker {
+  animation: crt-flicker-animation 0.15s infinite;
+  pointer-events: none;
+}
+
+@keyframes crt-flicker-animation {
+  0% { opacity: 0.99; }
+  50% { opacity: 1; }
+  100% { opacity: 0.985; }
+}
+
+/* Custom Scrollbar for Terminal Output */
+.terminal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.terminal-scrollbar::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+.terminal-scrollbar::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 3px;
+}
+
+.terminal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #76B900;
+}
+
+/* Blinking Block Cursor */
+.terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background-color: #76B900;
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
+.terminal-cursor.input-cursor {
+  background-color: #ffffff;
+}
+
+@keyframes cursor-blink {
+  from, to { background-color: transparent }
+  50% { background-color: currentColor }
+}
+
+/* Text glow */
+.text-glow-nvidia {
+  text-shadow: 0 0 5px rgba(118, 185, 0, 0.5);
+}
+
+/* Selection colors inside the terminal */
+.terminal-selection::selection {
+  background-color: rgba(118, 185, 0, 0.3) !important;
+  color: #ffffff !important;
+}
+
+/* Typing output wraps and margins */
+.terminal-line {
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Title bar control buttons */
+.title-bar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Hex codes scrolling "hack" layout */
+.hack-line {
+  font-family: 'Fira Code', monospace;
+  color: #76B900;
+  opacity: 0.9;
+}
+
+/* Canvas overlays (Matrix) */
+.canvas-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
