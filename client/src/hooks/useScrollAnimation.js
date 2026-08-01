@@ -48,6 +48,8 @@ export function useCountUp() {
     const el = ref.current
     if (!el) return
 
+    el.classList.add('is-visible')
+
     const counters = el.querySelectorAll('[data-target]')
     counters.forEach((counter) => {
       const target = parseInt(counter.dataset.target, 10)

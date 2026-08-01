@@ -32,7 +32,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-nvidia/10 border border-nvidia/30 mb-4 shadow-nvidia-glow overflow-hidden">
-            <img src="/favicon.png" alt="NVIDIA Club Logo" className="w-16 h-16 object-contain" />
+            <img src="/favicon.png" alt="NVIDIA Club Logo" loading="lazy" decoding="async" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-2xl font-display font-extrabold text-white">Admin CMS</h1>
           <p className="text-xs font-mono text-nvidia mt-1">NVIDIA Club @ Galgotias University</p>

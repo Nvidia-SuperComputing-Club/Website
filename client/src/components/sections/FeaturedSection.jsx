@@ -52,7 +52,7 @@ export default function FeaturedSection() {
         role="list"
       >
         {FEATURED_EVENTS.map((event) => (
-          <article key={event.id} className="stagger-child card-nvidia p-6 space-y-4 flex flex-col justify-between group" role="listitem">
+          <article key={event.id} className="stagger-child nvidia-card p-6 space-y-4 flex flex-col justify-between group" role="listitem">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-nvidia bg-nvidia/10 px-2.5 py-1 rounded border border-nvidia/20 font-semibold">
