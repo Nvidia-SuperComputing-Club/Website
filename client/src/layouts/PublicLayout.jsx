@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom'
-import Navbar from '../components/layout/Navbar.jsx'
-import Footer from '../components/layout/Footer.jsx'
+﻿import { Outlet } from "react-router-dom";
+import Navbar from "../components/layout/Navbar.jsx";
+import Footer from "../components/layout/Footer.jsx";
 
 export default function PublicLayout() {
   return (
@@ -11,5 +11,5 @@ export default function PublicLayout() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
