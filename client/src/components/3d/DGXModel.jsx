@@ -28,9 +28,11 @@ class ModelErrorBoundary extends React.Component {
   }
 }
 
+const LOAD_3D_MODEL = import.meta.env.VITE_LOAD_3D_MODEL === 'true';
+
 // 1. Attempts to load the physical GLTF file
 function DGXGLTFModel() {
-  const { scene } = useGLTF('/models/dgx-h100.glb');
+  const { scene } = useGLTF('/models/dgx-h100.glb', 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
   
   // Traverse and apply PBR properties & emissive glow to the GLTF model
   scene.traverse((child) => {
@@ -203,7 +205,7 @@ export default function DGXModel({ isMobile = false }) {
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       <ModelErrorBoundary fallback={<DGXProceduralModel />}>
-        <DGXGLTFModel />
+        {LOAD_3D_MODEL ? <DGXGLTFModel /> : <DGXProceduralModel />}
       </ModelErrorBoundary>
     </group>
   );

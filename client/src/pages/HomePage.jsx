@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, ChevronRight } from "lucide-react";
 import AboutSection from "../components/sections/AboutSection.jsx";
 import FeaturedSection from "../components/sections/FeaturedSection.jsx";
@@ -224,3 +224,4 @@ export default function HomePage() {
     </>
   );
 }
+
