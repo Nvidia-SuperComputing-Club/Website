@@ -167,7 +167,7 @@ export default function HeroSection() {
             </span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 text-white leading-none">
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold tracking-tight mb-6 text-white leading-none">
             <div className="block overflow-hidden pb-1">
               {renderSplitLetters("NVIDIA", "bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent")}
             </div>
@@ -182,7 +182,7 @@ export default function HeroSection() {
           <p className="hero-subtitle opacity-0 text-gray-300 text-xs sm:text-sm lg:text-base max-w-xl mb-8 leading-relaxed font-sans">
             The premier student technology society at Galgotias University powered by our flagship{' '}
             <span className="text-nvidia font-mono font-bold">NVIDIA DGX H200</span> supercomputer,
-            deep learning research, parallel CUDA kernels, and hardware hackathons.
+            deep learning research, parallel CUDA kernels, and software hackathons.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3.5 mb-8 justify-center md:justify-start">

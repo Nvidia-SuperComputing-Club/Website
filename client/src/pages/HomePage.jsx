@@ -1,10 +1,15 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, ChevronRight } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 import AboutSection from "../components/sections/AboutSection.jsx";
 import FeaturedSection from "../components/sections/FeaturedSection.jsx";
 import CommunitiesSection from "../components/sections/CommunitiesSection.jsx";
 import JoinCTA from "../components/sections/JoinCTA.jsx";
 import { EventCountdown } from "../components/sections/EventCountdown.jsx";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const SPOTLIGHT_EVENT = {
   title: "Galgotias NVIDIA DGX H200 AI Sprint 2026",
@@ -15,8 +20,9 @@ const SPOTLIGHT_EVENT = {
     "Join the premier 24-hour GPU coding competition. Train, fine-tune, and optimize 70B+ parameter LLMs live on our flagship NVIDIA DGX H200 node with total prizes of \u20B92,50,000.",
   registrationUrl: "https://galgotiasuniversity.edu.in",
 };
+
 const FRAME_SOURCES = Object.entries(
-  import.meta.glob("../assets/exploding-frames-dgx-h200/*.jpg", {
+  import.meta.glob("../assets/dgx/*.webp", {
     eager: true,
     query: "?url",
     import: "default",
@@ -24,57 +30,88 @@ const FRAME_SOURCES = Object.entries(
 )
   .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
   .map(([, u]) => u);
-const clamp = (v) => Math.max(0, Math.min(1, v)),
-  fade = (p, a, b, f = 0.045) => clamp(Math.min((p - a) / f, (b - p) / f));
+
+const TOTAL_FRAMES = FRAME_SOURCES.length;
+
+const clamp = (v) => Math.max(0, Math.min(1, v));
+const fade = (p, a, b, f = 0.045) =>
+  clamp(Math.min((p - a) / f, (b - p) / f));
+
+/* ── Canvas-based frame sequence ───────────────────────────────────────── */
+
 function Sequence({ progress }) {
-  const ref = useRef(null),
-    imgs = useRef([]),
-    f = Math.round(progress * (FRAME_SOURCES.length - 1));
-  const draw = (i) => {
-    const c = ref.current;
-    if (!c || !i?.naturalWidth) return;
-    const d = Math.min(devicePixelRatio || 1, 2),
-      w = innerWidth,
-      h = innerHeight;
+  const canvasRef = useRef(null);
+  const imagesRef = useRef([]);
+  const prevFrame = useRef(-1);
+
+  // preload first 40 frames on mount
+  useEffect(() => {
+    const preload = Math.min(40, TOTAL_FRAMES);
+    for (let i = 0; i < preload; i++) {
+      const img = new Image();
+      img.src = FRAME_SOURCES[i];
+      imagesRef.current[i] = img;
+    }
+
+    const onResize = () => {
+      const idx = Math.round(progress * (TOTAL_FRAMES - 1));
+      draw(imagesRef.current[idx]);
+    };
+    addEventListener("resize", onResize);
+    return () => removeEventListener("resize", onResize);
+  }, []);
+
+  const FRAME_W = 1920;
+  const FRAME_H = 804;
+
+  const draw = (img) => {
+    const c = canvasRef.current;
+    if (!c || !img?.naturalWidth) return;
+    const d = Math.min(devicePixelRatio || 1, 2);
+    const w = FRAME_W;
+    const h = FRAME_H;
     if (c.width !== w * d || c.height !== h * d) {
       c.width = w * d;
       c.height = h * d;
     }
-    const x = c.getContext("2d"),
-      r = i.naturalWidth / i.naturalHeight,
-      dw = w / h > r ? w : h * r,
-      dh = dw / r;
-    x.setTransform(d, 0, 0, d, 0, 0);
-    x.clearRect(0, 0, w, h);
-    x.drawImage(i, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    const ctx = c.getContext("2d");
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
   };
+
   useEffect(() => {
-    imgs.current = FRAME_SOURCES.map((u) => {
-      const i = new Image();
-      i.src = u;
-      return i;
-    });
-    const r = () => draw(imgs.current[f]);
-    addEventListener("resize", r);
-    return () => removeEventListener("resize", r);
-  }, []);
-  useEffect(() => {
-    const i = imgs.current[f];
-    if (i?.complete) draw(i);
-    else if (i) i.onload = () => draw(i);
-  }, [f]);
-  return <canvas ref={ref} className="dgx-sequence" aria-hidden="true" />;
+    const idx = Math.round(progress * (TOTAL_FRAMES - 1));
+    if (idx === prevFrame.current) return;
+    prevFrame.current = idx;
+
+    let img = imagesRef.current[idx];
+    if (!img) {
+      img = new Image();
+      img.src = FRAME_SOURCES[idx];
+      imagesRef.current[idx] = img;
+    }
+    if (img.complete) draw(img);
+    else img.onload = () => draw(img);
+  }, [progress]);
+
+  return <canvas ref={canvasRef} className="dgx-sequence" aria-hidden="true" />;
 }
-const Content = ({ progress }) => {
-  const h = fade(progress, 0, 0.19, 0.06),
-    a = fade(progress, 0.14, 0.43),
-    n = fade(progress, 0.38, 0.68),
-    c = fade(progress, 0.63, 0.88),
-    e = fade(progress, 0.84, 1.04, 0.06),
-    s = (o, x = 0, y = 0) => ({
-      opacity: o,
-      transform: `translate(${(1 - o) * x}px,${(1 - o) * y}px)`,
-    });
+
+/* ── Text content overlays ─────────────────────────────────────────────── */
+
+function Content({ progress }) {
+  const h = fade(progress, 0, 0.19, 0.06);
+  const a = fade(progress, 0.14, 0.43);
+  const n = fade(progress, 0.38, 0.68);
+  const c = fade(progress, 0.63, 0.88);
+  const e = fade(progress, 0.84, 1.04, 0.06);
+
+  const s = (o, x = 0, y = 0) => ({
+    opacity: o,
+    transform: `translate(${(1 - o) * x}px,${(1 - o) * y}px)`,
+  });
+
   return (
     <div className="dgx-copy-layer">
       <section className="dgx-copy hero-copy" style={s(h, 0, 22)}>
@@ -90,8 +127,9 @@ const Content = ({ progress }) => {
           infers, and never stops.
         </p>
       </section>
+
       <section className="dgx-copy copy-left" style={s(a, -34)}>
-        <p className="eyebrow">01 â€” ARCHITECTURE</p>
+        <p className="eyebrow">01 — ARCHITECTURE</p>
         <h2>
           Precision-engineered
           <br />
@@ -103,11 +141,12 @@ const Content = ({ progress }) => {
         </p>
         <p>
           Every component is tuned for bandwidth, density, and sustained
-          performance â€” hour after hour.
+          performance — hour after hour.
         </p>
       </section>
+
       <section className="dgx-copy copy-right" style={s(n, 34)}>
-        <p className="eyebrow">02 â€” INTERCONNECT</p>
+        <p className="eyebrow">02 — INTERCONNECT</p>
         <h2>
           Instant-scale
           <br />
@@ -119,8 +158,9 @@ const Content = ({ progress }) => {
           <li>No bottlenecks. No idle cycles.</li>
         </ul>
       </section>
+
       <section className="dgx-copy copy-left compute-copy" style={s(c, -34)}>
-        <p className="eyebrow">03 â€” PERFORMANCE</p>
+        <p className="eyebrow">03 — PERFORMANCE</p>
         <h2>
           Immense compute,
           <br />
@@ -132,6 +172,7 @@ const Content = ({ progress }) => {
         </p>
         <p>Architecture-level tuning restores efficiency to every FLOP.</p>
       </section>
+
       <section className="dgx-copy final-copy" style={s(e, 0, 22)}>
         <p className="eyebrow">THE FRONTIER STARTS HERE</p>
         <h2>
@@ -151,66 +192,68 @@ const Content = ({ progress }) => {
       </section>
     </div>
   );
-};
+}
+
+/* ── Main page ─────────────────────────────────────────────────────────── */
+
 export default function HomePage() {
-  const story = useRef(null);
+  const storyRef = useRef(null);
   const [progress, setProgress] = useState(0);
+  const frameCounterRef = useRef(null);
+  const scrollHintRef = useRef(null);
+  const progressBarRef = useRef(null);
 
   useEffect(() => {
-    let animationFrameId;
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: storyRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1.5,
+        onUpdate(self) {
+          const p = self.progress;
+          setProgress(p);
 
-    const updateProgress = () => {
-      const storyElement = story.current;
-      if (!storyElement) return;
-
-      const scrollDistance = storyElement.offsetHeight - innerHeight;
-      setProgress(
-        clamp(-storyElement.getBoundingClientRect().top / scrollDistance),
-      );
-      animationFrameId = null;
-    };
-
-    const handleScroll = () => {
-      if (!animationFrameId) {
-        animationFrameId = requestAnimationFrame(updateProgress);
-      }
-    };
-
-    updateProgress();
-    addEventListener("scroll", handleScroll, { passive: true });
-    addEventListener("resize", handleScroll);
-
-    return () => {
-      removeEventListener("scroll", handleScroll);
-      removeEventListener("resize", handleScroll);
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    };
+          if (frameCounterRef.current) {
+            frameCounterRef.current.textContent = String(
+              Math.round(p * (TOTAL_FRAMES - 1)) + 1,
+            ).padStart(3, "0");
+          }
+          if (progressBarRef.current) {
+            progressBarRef.current.style.transform = `scaleX(${p})`;
+          }
+          if (scrollHintRef.current) {
+            scrollHintRef.current.style.opacity = String(
+              fade(p, 0, 0.11, 0.04),
+            );
+          }
+        },
+      });
+    });
+    return () => ctx.revert();
   }, []);
 
   return (
     <>
-      <section id="story" ref={story} className="dgx-story">
+      <section id="story" ref={storyRef} className="dgx-story">
         <div className="stage">
           <div className="ambient" />
           <Sequence progress={progress} />
           <Content progress={progress} />
           <div className="progress">
-            <span style={{ transform: `scaleX(${progress})` }} />
+            <span ref={progressBarRef} />
           </div>
-          <div
-            className="scroll"
-            style={{ opacity: fade(progress, 0, 0.11, 0.04) }}
-          >
+          <div ref={scrollHintRef} className="scroll">
             <ArrowDown size={14} /> Scroll to explore
           </div>
           <div className="frame">
-            {String(
-              Math.round(progress * (FRAME_SOURCES.length - 1)) + 1,
-            ).padStart(3, "0")}{" "}
-            <span>/ {FRAME_SOURCES.length}</span>
+            <span ref={frameCounterRef}>001</span>{" "}
+            <span>/ {TOTAL_FRAMES}</span>
           </div>
         </div>
       </section>
+
+      
 
       <AboutSection />
 
@@ -224,4 +267,3 @@ export default function HomePage() {
     </>
   );
 }
-

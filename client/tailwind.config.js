@@ -21,10 +21,19 @@ export default {
           tertiary: '#666666',
           accent: '#76B900',
         },
+        foreground: '#FFFFFF',
+        'muted-foreground': '#A0A0A0',
+        background: '#010803',
+        border: '#27272A',
+        obsidian: {
+          850: '#0D0D0D',
+          900: '#0A0A0A',
+          950: '#010803',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'Satoshi', 'system-ui', 'sans-serif'],
-        display: ['Inter', 'Satoshi', 'system-ui', 'sans-serif'],
+        sans: ['sans-serif'],
+        display: ['Audiowide', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
       },
       fontSize: {

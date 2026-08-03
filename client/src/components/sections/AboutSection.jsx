@@ -22,7 +22,7 @@ const PILLARS = [
   },
   {
     icon: Flame,
-    title: "Hardware Hackathons",
+    title: "Software Hackathons",
     desc: "24-hour sprint competitions with real-time access to our NVIDIA DGX H200 supercomputer node and cash prizes.",
     tag: "COMPETITION"
   }
@@ -42,7 +42,7 @@ export default function AboutSection() {
           <Terminal className="w-3.5 h-3.5" />
           <span>GALGOTIAS CHAPTER PILLARS</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-display font-bold text-white">
+        <h2 className="text-3xl sm:text-4xl font-display text-white">
           POWERING NEXT-GEN GPU INNOVATORS
         </h2>
         <p className="text-gray-400 text-sm max-w-xl mx-auto font-sans">

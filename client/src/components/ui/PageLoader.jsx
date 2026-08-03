@@ -3,7 +3,7 @@ import React from 'react'
 export default function PageLoader() {
   return (
     <div 
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] select-none text-center"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#010803] select-none text-center"
       role="alert"
       aria-busy="true"
       aria-label="Loading page content"
