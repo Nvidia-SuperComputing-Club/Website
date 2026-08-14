@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { api } from '../services/api'
-import { Github, Linkedin, Twitter, Building2, Sparkles, Award, User } from 'lucide-react'
+import { Building2, Sparkles, Award, User } from 'lucide-react'
+import AnimatedTeamSection from '../components/sections/AnimatedTeamSection.jsx'
 
 const getInitials = (name) => {
   if (!name) return 'TM'
@@ -119,65 +120,7 @@ export default function TeamPage() {
             <p className="text-sm font-mono text-gray-400 mt-1">Check back soon for new club executives.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((member) => (
-              <div key={member._id || member.id} className="nvidia-card rounded-2xl overflow-hidden p-5 space-y-4 flex flex-col justify-between group">
-                <div className="space-y-4">
-                  <div className="relative h-48 rounded-xl overflow-hidden bg-obsidian-950 flex items-center justify-center border border-nvidia/20">
-                    {member.image_url ? (
-                      <img
-                        src={member.image_url?.includes('cloudinary.com') ? member.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : member.image_url}
-                        alt={member.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 rounded-2xl bg-nvidia/10 border border-nvidia/30 text-nvidia flex items-center justify-center text-2xl font-display font-bold">
-                        {getInitials(member.name)}
-                      </div>
-                    )}
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-obsidian-950/80 border border-nvidia/30 text-[10px] font-mono text-nvidia">
-                      CLASS OF {member.graduation_year || '2026'}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-display font-bold text-white group-hover:text-nvidia transition-colors">
-                      {member.name}
-                    </h3>
-                    <p className="text-xs font-mono text-nvidia font-medium mt-0.5">
-                      {member.role}
-                    </p>
-                  </div>
-
-                  {member.bio && (
-                    <p className="text-xs text-gray-300 line-clamp-3 leading-relaxed font-sans">
-                      {member.bio}
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center gap-3 text-gray-400">
-                  {member.github_url && (
-                    <a href={member.github_url} target="_blank" rel="noopener noreferrer" className="hover:text-nvidia transition-colors" aria-label={`${member.name} GitHub`}>
-                      <Github className="w-4 h-4" />
-                    </a>
-                  )}
-                  {member.linkedin_url && (
-                    <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-nvidia transition-colors" aria-label={`${member.name} LinkedIn`}>
-                      <Linkedin className="w-4 h-4" />
-                    </a>
-                  )}
-                  {member.twitter_url && (
-                    <a href={member.twitter_url} target="_blank" rel="noopener noreferrer" className="hover:text-nvidia transition-colors" aria-label={`${member.name} Twitter`}>
-                      <Twitter className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <AnimatedTeamSection members={team} />
         )}
       </div>
     </div>
