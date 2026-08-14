@@ -18,9 +18,10 @@ The landing page is designed to be an **Awwwards-caliber** experience with a 3D 
 | ---------------- | ------------------------------------------------- |
 | **Frontend**     | React 19, Vite, Tailwind CSS, React Router DOM    |
 | **3D / Motion**  | Three.js, React Three Fiber, GSAP, WebGL          |
-| **Backend & DB** | Supabase (PostgreSQL, Auth, Auto-generated APIs) |
+| **Backend & DB** | Express.js + MongoDB (Mongoose) / Supabase        |
 | **Auth**         | Supabase Auth (Google, GitHub, Email/Password)    |
 | **Storage**      | Cloudinary (images/media)                          |
+| **Testing**      | Vitest, React Testing Library, Supertest          |
 
 ---
 
@@ -39,20 +40,31 @@ website/
 │   │   │   ├── ui/                  # Reusable UI primitives (Button, Card, Modal)
 │   │   │   ├── layout/              # Navbar, Footer, PageWrapper
 │   │   │   └── admin/               # Admin dashboard components
-│   │   ├── context/                 # React Context providers (Auth, Theme)
-│   │   ├── hooks/                   # Custom hooks (useScrollAnimation, useAuth)
 │   │   ├── layouts/                 # Route layouts (PublicLayout, AdminLayout)
 │   │   ├── pages/                   # Route-level page components
 │   │   │   └── admin/               # Admin pages (Dashboard, EventsCMS, TeamCMS)
 │   │   ├── routes/                  # React Router route definitions
-│   │   ├── services/                # API client functions (fetchWrapper, endpoints)
-│   │   ├── styles/                  # Global styles, Tailwind config
-│   │   └── utils/                   # Utility functions (date formatting, validation)
-│   ├── config/                      # Vite config, env config
+│   │   ├── services/                # API client functions (api.js)
+│   │   ├── test/                    # Test files and setup
+│   │   ├── assets/                  # Images, fonts, 3D model files
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   ├── App.jsx
+│   │   ├── vite.config.js
+│   │   ├── tailwind.config.js
+│   │   ├── package.json
+│   │   └── .env.example
 │   ├── index.html
+│   └── pnpm-workspace.yaml
+│
+├── server/                          # Backend (Express + MongoDB)
+│   ├── config/                      # Database connection (db.js)
+│   ├── middleware/                  # Auth middleware
+│   ├── models/                      # Mongoose models (Event, Team, HomepageContent, AdminUser)
+│   ├── routes/                      # API routes (events, team, homepage, auth, upload)
+│   ├── seed.js                      # Database seed script
+│   ├── index.js                     # Express server entry point
 │   ├── package.json
-│   ├── tailwind.config.js
-│   ├── vite.config.js
 │   └── .env.example
 │
 ├── docs/                            # Project documentation
@@ -77,14 +89,15 @@ website/
 
 - **Node.js** v18+ (recommended: v20 LTS)
 - **npm** or **yarn**
-- **Supabase** account (for backend, database, and auth)
+- **MongoDB** (local or MongoDB Atlas)
+- **Supabase** account (for auth and additional features)
 - **Git**
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/nvidia-supercomputing-club-website.git
-cd nvidia-supercomputing-club-website
+git clone https://github.com/Nvidia-SuperComputing-Club/Website.git
+cd Website
 ```
 
 ### 2. Setup Frontend
@@ -92,17 +105,45 @@ cd nvidia-supercomputing-club-website
 ```bash
 cd client
 npm install
-cp .env.example .env    # Fill in your API URL
+cp .env.example .env
 npm run dev             # Starts on http://localhost:5173
 ```
 
-### 3. Environment Variables
+### 3. Setup Backend
+
+```bash
+cd server
+npm install
+cp .env.example .env     # Configure MongoDB URI and JWT secret
+npm run dev              # Starts on http://localhost:5000
+```
+
+### 4. Seed Database
+
+```bash
+cd server
+node seed.js
+```
+
+### 5. Environment Variables
 
 #### Client `.env`
 
 ```env
 VITE_SUPABASE_URL=your-supabase-project-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_API_URL=http://localhost:5000/api
+```
+
+#### Server `.env`
+
+```env
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/nvidia-sc-website
+CORS_ORIGIN=http://localhost:5173
+JWT_SECRET=your_jwt_secret_key_here_change_in_production
+JWT_EXPIRY=1h
 ```
 
 ---
@@ -118,7 +159,15 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 | `npm run preview`   | Preview production build     |
 | `npm run lint`      | Run ESLint                   |
 | `npm run format`    | Format with Prettier         |
+| `npm run test`      | Run tests with Vitest        |
 
+### Backend (`server/`)
+
+| Command             | Description                  |
+| ------------------- | ---------------------------- |
+| `npm run dev`       | Start Express server (nodemon)|
+| `npm start`         | Start Express server         |
+| `node seed.js`      | Seed database with initial data |
 
 ---
 

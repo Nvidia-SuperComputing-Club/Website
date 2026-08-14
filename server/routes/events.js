@@ -1,88 +1,160 @@
 import express from 'express';
+import Event from '../models/Event.js';
+import { authenticate, authorizeAdmin } from '../middleware/auth.js';
+
 const router = express.Router();
 
-// Mock initial data
-const mockEvents = [
-  {
-    id: 'events-1',
-    title: 'CUDA Workshop Series',
-    description: 'Hands-on CUDA programming workshop',
-    date: '2026-08-15T18:00:00Z',
-    location: 'Room 301, CS Building',
-    image_url: '',
-    category: 'workshop',
-    is_featured: true,
-    created_at: '2026-07-01T10:00:00Z'
-  },
-  {
-    id: 'events-2',
-    title: 'AI Supercomputing Challenge',
-    description: 'Train deep learning models on cluster environments to solve complex real-world issues.',
-    date: '2026-09-10T09:00:00Z',
-    location: 'Main Exhibition Hall',
-    image_url: '',
-    category: 'hackathon',
-    is_featured: false,
-    created_at: '2026-07-05T12:00:00Z'
-  }
-];
-
 // GET /api/events
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    data: mockEvents,
-    pagination: {
-      page: 1,
-      limit: 10,
-      total: mockEvents.length,
-      pages: 1
-    }
-  });
-});
+router.get('/', async (req, res) => {
+  try {
+    const {
+      category,
+      featured,
+      upcoming,
+      page = 1,
+      limit = 10,
+      sort = 'date'
+    } = req.query;
 
-// GET /api/events/:id
-router.get('/:id', (req, res) => {
-  const event = mockEvents.find(e => e.id === req.params.id);
-  if (!event) {
-    return res.status(404).json({
+    const query = {};
+
+    if (category) query.category = category;
+    if (featured !== undefined) query.is_featured = featured === 'true';
+    if (upcoming === 'true') query.date = { $gte: new Date() };
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortOption = {};
+    sortOption[sort] = 1;
+
+    const [data, total] = await Promise.all([
+      Event.find(query).sort(sortOption).skip(skip).limit(parseInt(limit)),
+      Event.countDocuments(query)
+    ]);
+
+    res.json({
+      success: true,
+      data,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
       error: {
-        code: 'NOT_FOUND',
-        message: 'Event not found'
+        code: 'SERVER_ERROR',
+        message: error.message
       }
     });
   }
-  res.json({
-    success: true,
-    data: event
-  });
+});
+
+// GET /api/events/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Event not found'
+        }
+      });
+    }
+    res.json({ success: true, data: event });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: error.message
+      }
+    });
+  }
 });
 
 // POST /api/events
-router.post('/', (req, res) => {
-  res.status(201).json({
-    success: true,
-    message: 'Event created successfully (Mock Stub)',
-    data: { id: 'new-event-id', ...req.body }
-  });
+router.post('/', authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const event = await Event.create(req.body);
+    res.status(201).json({
+      success: true,
+      message: 'Event created successfully',
+      data: event
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: error.message
+      }
+    });
+  }
 });
 
 // PUT /api/events/:id
-router.put('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Event updated successfully (Mock Stub)',
-    data: { id: req.params.id, ...req.body }
-  });
+router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Event not found'
+        }
+      });
+    }
+    res.json({
+      success: true,
+      message: 'Event updated successfully',
+      data: event
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: error.message
+      }
+    });
+  }
 });
 
 // DELETE /api/events/:id
-router.delete('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Event deleted successfully (Mock Stub)'
-  });
+router.delete('/:id', authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Event not found'
+        }
+      });
+    }
+    res.json({
+      success: true,
+      message: 'Event deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: error.message
+      }
+    });
+  }
 });
 
 export default router;

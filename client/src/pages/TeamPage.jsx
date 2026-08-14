@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { api } from '../services/api'
 import { Github, Linkedin, Twitter, Building2, Sparkles, Award, User } from 'lucide-react'
 
 const getInitials = (name) => {
@@ -15,18 +16,34 @@ const getInitials = (name) => {
 export default function TeamPage() {
   const [team, setTeam] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchTeam = async () => {
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
-      if (!error && data) {
-        setTeam(data)
+      try {
+        setLoading(true)
+        setError(null)
+        const result = await api.get('/team?limit=50')
+        const data = result.data || []
+        const activeMembers = data.filter(m => m.is_active !== false)
+        setTeam(activeMembers)
+      } catch (err) {
+        setError(err.message)
+        const fetchSupabase = async () => {
+          const { data, error } = await supabase
+            .from('team_members')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+          if (!error && data) {
+            setTeam(data)
+          }
+          setLoading(false)
+        }
+        fetchSupabase()
+      } finally {
+        if (!error) setLoading(false)
       }
-      setLoading(false)
     }
     fetchTeam()
   }, [])
@@ -91,6 +108,10 @@ export default function TeamPage() {
               </div>
             ))}
           </div>
+        ) : error && team.length === 0 ? (
+          <div className="text-center py-12 bg-red-900/20 border border-red-500/30 rounded-2xl">
+            <p className="text-red-400 font-mono text-sm">Failed to load team: {error}</p>
+          </div>
         ) : team.length === 0 ? (
           <div className="text-center py-12 bg-obsidian-900/40 rounded-2xl border border-dashed border-white/10">
             <User className="w-12 h-12 text-nvidia mx-auto mb-3 opacity-40" />
@@ -100,16 +121,16 @@ export default function TeamPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {team.map((member) => (
-              <div key={member.id} className="nvidia-card rounded-2xl overflow-hidden p-5 space-y-4 flex flex-col justify-between group">
+              <div key={member._id || member.id} className="nvidia-card rounded-2xl overflow-hidden p-5 space-y-4 flex flex-col justify-between group">
                 <div className="space-y-4">
                   <div className="relative h-48 rounded-xl overflow-hidden bg-obsidian-950 flex items-center justify-center border border-nvidia/20">
                     {member.image_url ? (
-                      <img 
-                        src={member.image_url?.includes('cloudinary.com') ? member.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : member.image_url} 
-                        alt={member.name} 
+                      <img
+                        src={member.image_url?.includes('cloudinary.com') ? member.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : member.image_url}
+                        alt={member.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-20 h-20 rounded-2xl bg-nvidia/10 border border-nvidia/30 text-nvidia flex items-center justify-center text-2xl font-display font-bold">
