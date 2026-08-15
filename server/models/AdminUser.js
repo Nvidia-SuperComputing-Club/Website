@@ -27,8 +27,6 @@ const adminUserSchema = new mongoose.Schema({
   timestamps: true
 });
 
-adminUserSchema.index({ email: 1 });
-
 adminUserSchema.pre('save', async function(next) {
   if (!this.isModified('password') || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 12);
