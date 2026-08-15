@@ -18,15 +18,6 @@ const adminUserSchema = new mongoose.Schema({
     type: String,
     select: false
   },
-  provider: {
-    type: String,
-    enum: ['google', 'github', 'email'],
-    default: 'email'
-  },
-  provider_id: {
-    type: String,
-    default: ''
-  },
   role: {
     type: String,
     enum: ['admin', 'editor'],
@@ -37,7 +28,6 @@ const adminUserSchema = new mongoose.Schema({
 });
 
 adminUserSchema.index({ email: 1 });
-adminUserSchema.index({ provider_id: 1 });
 
 adminUserSchema.pre('save', async function(next) {
   if (!this.isModified('password') || !this.password) return next();

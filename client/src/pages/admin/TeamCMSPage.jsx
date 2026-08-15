@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../services/api'
 import MemberForm from '../../components/admin/MemberForm.jsx'
 import {
   Plus, Pencil, Trash2, Search, X,
@@ -32,7 +32,7 @@ export default function TeamCMSPage() {
   const [editId, setEditId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState({ msg: '', type: 'success' })
-  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'table'
+  const [viewMode, setViewMode] = useState('grid')
   const [draggedIdx, setDraggedIdx] = useState(null)
 
   const showToast = (msg, type = 'success') => {
@@ -42,13 +42,14 @@ export default function TeamCMSPage() {
 
   const fetchMembers = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('team_members')
-      .select('*')
-      .order('display_order', { ascending: true })
-    if (error) showToast(error.message, 'error')
-    else setMembers(data ?? [])
-    setLoading(false)
+    try {
+      const result = await api.get('/team')
+      setMembers(result.data ?? [])
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchMembers() }, [])
@@ -70,37 +71,45 @@ export default function TeamCMSPage() {
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const payload = { ...form, display_order: Number(form.display_order) }
-    let error
-    if (modal === 'create') {
-      ({ error } = await supabase.from('team_members').insert([payload]))
-    } else {
-      ({ error } = await supabase.from('team_members').update(payload).eq('id', editId))
+    try {
+      const payload = { ...form, display_order: Number(form.display_order) }
+      if (modal === 'create') {
+        await api.post('/team', payload)
+        showToast('Member added successfully')
+      } else {
+        await api.put(`/team/${editId}`, payload)
+        showToast('Member updated')
+      }
+      closeModal()
+      fetchMembers()
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
-    if (error) { showToast(error.message, 'error'); return }
-    showToast(modal === 'create' ? 'Member added successfully' : 'Member updated')
-    closeModal()
-    fetchMembers()
   }
 
-  // Soft Delete - Updates is_active status to false
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to remove "${name}" from the team? (This will hide them from the public page)`)) return
-    const { error } = await supabase.from('team_members').update({ is_active: false }).eq('id', id)
-    if (error) { showToast(error.message, 'error'); return }
-    showToast('Member removed (soft-deleted)')
-    fetchMembers()
+    try {
+      await api.delete(`/team/${id}`)
+      showToast('Member removed (soft-deleted)')
+      fetchMembers()
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
   const toggleActive = async (id, current) => {
-    const { error } = await supabase.from('team_members').update({ is_active: !current }).eq('id', id)
-    if (error) { showToast(error.message, 'error'); return }
-    setMembers(members.map(m => m.id === id ? { ...m, is_active: !current } : m))
-    showToast(!current ? 'Member is now visible' : 'Member is now hidden')
+    try {
+      await api.put(`/team/${id}`, { is_active: !current })
+      setMembers(members.map(m => m.id === id ? { ...m, is_active: !current } : m))
+      showToast(!current ? 'Member is now visible' : 'Member is now hidden')
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
-  // HTML5 Native Drag & Drop Handlers
   const handleDragStart = (e, index) => {
     setDraggedIdx(index)
     e.dataTransfer.effectAllowed = 'move'
@@ -118,29 +127,19 @@ export default function TeamCMSPage() {
     const [draggedItem] = newMembers.splice(draggedIdx, 1)
     newMembers.splice(index, 0, draggedItem)
 
-    // Optimistically update state
     setMembers(newMembers)
 
-    // Map new ordered positions to display_order values
     const updates = newMembers.map((m, idx) => ({
-      id: m.id,
-      name: m.name,
-      role: m.role,
-      bio: m.bio,
-      image_url: m.image_url,
-      github_url: m.github_url,
-      linkedin_url: m.linkedin_url,
-      twitter_url: m.twitter_url,
-      is_active: m.is_active,
+      ...m,
       display_order: idx + 1
     }))
 
-    const { error } = await supabase.from('team_members').upsert(updates)
-    if (error) {
-      showToast('Failed to save display order: ' + error.message, 'error')
-      fetchMembers() // Rollback on error
-    } else {
+    try {
+      await Promise.all(updates.map(m => api.put(`/team/${m.id}`, { display_order: m.display_order })))
       showToast('Display order updated successfully')
+    } catch (err) {
+      showToast('Failed to save display order: ' + err.message, 'error')
+      fetchMembers()
     }
   }
 
@@ -174,7 +173,6 @@ export default function TeamCMSPage() {
 
       {/* Controls: Search and Layout Toggles */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Search */}
         <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
@@ -184,9 +182,8 @@ export default function TeamCMSPage() {
           />
         </div>
 
-        {/* Grid/Table view toggler */}
         <div className="flex bg-obsidian-950 p-1 rounded-xl border border-white/5 shrink-0 self-start sm:self-center">
-          <button 
+          <button
             onClick={() => setViewMode('grid')}
             title="Grid view"
             className={`p-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
@@ -198,7 +195,7 @@ export default function TeamCMSPage() {
             <LayoutGrid className="w-3.5 h-3.5" />
             <span>Grid</span>
           </button>
-          <button 
+          <button
             onClick={() => setViewMode('table')}
             title="Table view"
             className={`p-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
@@ -219,11 +216,10 @@ export default function TeamCMSPage() {
       ) : filtered.length === 0 ? (
         <p className="text-center text-gray-500 font-mono text-sm py-16">No members found.</p>
       ) : viewMode === 'grid' ? (
-        /* GRID VIEW */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m, idx) => (
-            <div 
-              key={m.id} 
+            <div
+              key={m.id}
               draggable
               onDragStart={e => handleDragStart(e, idx)}
               onDragOver={e => handleDragOver(e, idx)}
@@ -235,12 +231,12 @@ export default function TeamCMSPage() {
             >
               <div className="flex items-start gap-3">
                 {m.image_url ? (
-                  <img 
-                    src={m.image_url?.includes('cloudinary.com') ? m.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : m.image_url} 
-                    alt={m.name} 
-                    loading="lazy" 
-                    decoding="async" 
-                    className="w-12 h-12 rounded-full border-2 border-nvidia/40 object-cover shrink-0" 
+                  <img
+                    src={m.image_url}
+                    alt={m.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-12 h-12 rounded-full border-2 border-nvidia/40 object-cover shrink-0"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-nvidia/10 border-2 border-nvidia/30 flex items-center justify-center shrink-0">
@@ -254,7 +250,7 @@ export default function TeamCMSPage() {
                 </div>
               </div>
               {m.bio && <p className="text-xs text-gray-400 font-sans line-clamp-2 leading-relaxed">{m.bio}</p>}
-              
+
               <div className="flex items-center gap-2 pt-2.5 border-t border-white/5">
                 <button onClick={() => openEdit(m)} title="Edit"
                   className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all">
@@ -268,7 +264,7 @@ export default function TeamCMSPage() {
                   className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
-                
+
                 <span className={`ml-auto text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
                   m.is_active
                     ? 'text-nvidia bg-nvidia/10 border-nvidia/20'
@@ -281,7 +277,6 @@ export default function TeamCMSPage() {
           ))}
         </div>
       ) : (
-        /* TABLE VIEW */
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-bg-secondary">
           <table className="w-full text-left border-collapse text-xs font-mono">
             <thead>
@@ -297,7 +292,7 @@ export default function TeamCMSPage() {
             </thead>
             <tbody>
               {filtered.map((m, idx) => (
-                <tr 
+                <tr
                   key={m.id}
                   draggable
                   onDragStart={e => handleDragStart(e, idx)}
@@ -311,10 +306,10 @@ export default function TeamCMSPage() {
                   <td className="p-4 font-bold text-nvidia font-mono">{m.display_order}</td>
                   <td className="p-4">
                     {m.image_url ? (
-                      <img 
-                        src={m.image_url?.includes('cloudinary.com') ? m.image_url.replace('/upload/', '/upload/f_auto,q_auto/') : m.image_url} 
-                        alt={m.name} 
-                        className="w-8 h-8 rounded-full border border-nvidia/30 object-cover" 
+                      <img
+                        src={m.image_url}
+                        alt={m.name}
+                        className="w-8 h-8 rounded-full border border-nvidia/30 object-cover"
                       />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-nvidia/10 border border-nvidia/30 flex items-center justify-center">
@@ -369,7 +364,7 @@ export default function TeamCMSPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <MemberForm
               form={form}
               setForm={setForm}

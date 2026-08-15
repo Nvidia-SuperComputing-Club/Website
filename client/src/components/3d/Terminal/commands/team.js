@@ -1,4 +1,4 @@
-import { supabase } from '../../../../lib/supabase';
+import { api } from '../../../../services/api';
 
 const MOCK_TEAM = [
   {
@@ -30,26 +30,21 @@ const MOCK_TEAM = [
 export default async function teamHandler(args = []) {
   let members = [];
   try {
-    const { data, error } = await supabase
-      .from('team_members')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
-      
-    if (error || !data || data.length === 0) {
-      members = MOCK_TEAM;
-    } else {
-      members = data;
-    }
+    const result = await api.get('/team?limit=50');
+    const data = result.data || [];
+    members = data.filter(m => m.is_active !== false);
   } catch (err) {
     members = MOCK_TEAM;
   }
 
-  // Check if they queried a specific name (e.g., 'team daksh')
+  if (members.length === 0) {
+    members = MOCK_TEAM;
+  }
+
   if (args.length > 0) {
     const query = args.join(' ').toLowerCase();
     const match = members.find(m => m.name.toLowerCase().includes(query) || m.role.toLowerCase().includes(query));
-    
+
     if (!match) {
       return `Member matching "${args.join(' ')}" not found in active records.`;
     }
@@ -65,7 +60,6 @@ export default async function teamHandler(args = []) {
     return profile;
   }
 
-  // Otherwise, list all active members in standard format
   let output = `NVIDIA-SC TEAM MEMBERS:\n`;
   output += `--------------------------------------------------------------------------------\n`;
   output += `${'NAME'.padEnd(28)} ${'ROLE'}\n`;

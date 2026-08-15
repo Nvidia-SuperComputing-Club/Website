@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { 
+import { api } from '../services/api';
+import {
   Building2, Server, Award, Zap, ShieldCheck, Clock, MapPin,
-  Send, CheckCircle2, Cpu, User, Mail, GraduationCap, Sparkles 
+  Send, CheckCircle2, Cpu, User, Mail, GraduationCap, Sparkles
 } from 'lucide-react';
 
 export default function JoinPage() {
@@ -44,20 +44,12 @@ export default function JoinPage() {
     setError(null);
 
     try {
-      const { data, error: sbError } = await supabase
-        .from('membership_applications')
-        .insert([
-          {
-            full_name: formData.fullName,
-            email: formData.email,
-            year_major: formData.yearMajor,
-            interests: selectedInterests,
-            status: 'pending'
-          }
-        ]);
-
-      if (sbError) throw sbError;
-      
+      await api.post('/applications', {
+        full_name: formData.fullName,
+        email: formData.email,
+        year_major: formData.yearMajor,
+        interests: selectedInterests
+      });
       setSubmitted(true);
     } catch (err) {
       console.error('Error submitting application:', err);
@@ -69,7 +61,6 @@ export default function JoinPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
-      {/* Page Header */}
       <div className="text-center space-y-4 max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-nvidia/10 border border-nvidia/30 text-nvidia text-xs font-mono">
           <Building2 className="w-3.5 h-3.5" />
@@ -85,7 +76,6 @@ export default function JoinPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* Left Column: Member Perks & Schedule */}
         <div className="lg:col-span-5 space-y-8">
           <div className="space-y-4">
             <h2 className="text-2xl font-display font-bold text-white">GALGOTIAS MEMBER PERKS</h2>
@@ -128,7 +118,6 @@ export default function JoinPage() {
             </div>
           </div>
 
-          {/* Weekly Schedule Box */}
           <div className="p-6 rounded-2xl bg-bg-secondary border border-nvidia/30 space-y-3">
             <h3 className="text-sm font-mono font-bold text-nvidia uppercase tracking-wider">
               GALGOTIAS CHAPTER WEEKLY MEETINGS
@@ -146,7 +135,6 @@ export default function JoinPage() {
           </div>
         </div>
 
-        {/* Right Column: Interactive Join Form Island */}
         <div className="lg:col-span-7">
           {submitted ? (
             <div className="rounded-2xl bg-bg-secondary border border-nvidia/40 p-8 sm:p-12 text-center space-y-6 shadow-nvidia-glow animate-pulse">
@@ -158,7 +146,7 @@ export default function JoinPage() {
                 <p className="text-sm font-mono text-nvidia">Welcome to the NVIDIA Club @ Galgotias University</p>
               </div>
               <p className="text-gray-300 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
-                We’ve sent a Discord invite link and orientation schedule to <span className="text-white font-mono">{formData.email}</span>.
+                We've sent a Discord invite link and orientation schedule to <span className="text-white font-mono">{formData.email}</span>.
                 Check your inbox to get instant access to the Galgotias NVIDIA DGX H200 supercomputer node!
               </p>
               <button
@@ -193,7 +181,6 @@ export default function JoinPage() {
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Full Name */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5 text-nvidia" />
@@ -209,7 +196,6 @@ export default function JoinPage() {
                   />
                 </div>
 
-                {/* University Email */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-nvidia" />
@@ -226,7 +212,6 @@ export default function JoinPage() {
                 </div>
               </div>
 
-              {/* Year & Major */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                   <GraduationCap className="w-3.5 h-3.5 text-nvidia" />
@@ -242,7 +227,6 @@ export default function JoinPage() {
                 />
               </div>
 
-              {/* Interest Selector Pills */}
               <div className="space-y-2">
                 <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                   <Cpu className="w-3.5 h-3.5 text-nvidia" />
@@ -270,7 +254,6 @@ export default function JoinPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}

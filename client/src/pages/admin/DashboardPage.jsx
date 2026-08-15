@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../services/api'
 import {
   Calendar, Users, TrendingUp, Plus, Clock, RefreshCw
 } from 'lucide-react'
@@ -26,31 +26,19 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     setLoading(true)
-    const now = new Date().toISOString()
+    try {
+      const [statsRes, appsRes] = await Promise.all([
+        api.get('/dashboard/stats'),
+        api.get('/dashboard/applications')
+      ])
 
-    const [eventsRes, teamRes, upcomingRes, appsRes] = await Promise.all([
-      supabase.from('events').select('id', { count: 'exact', head: true }),
-      supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('is_active', true),
-      supabase.from('events').select('id', { count: 'exact', head: true }).gte('date', now),
-      supabase.from('membership_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-    ])
-
-    setStats({
-      events: eventsRes.count ?? 0,
-      team: teamRes.count ?? 0,
-      upcoming: upcomingRes.count ?? 0,
-      applications: appsRes.count ?? 0,
-    })
-
-    // Recent membership applications
-    const { data: apps } = await supabase
-      .from('membership_applications')
-      .select('id, full_name, email, created_at, status')
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    setRecentApps(apps ?? [])
-    setLoading(false)
+      setStats(statsRes.data)
+      setRecentApps(appsRes.data ?? [])
+    } catch (err) {
+      console.error('Failed to fetch dashboard stats:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchStats() }, [])

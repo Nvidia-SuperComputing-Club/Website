@@ -10,6 +10,8 @@ import teamRouter from './routes/team.js';
 import homepageRouter from './routes/homepage.js';
 import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
+import applicationsRouter from './routes/applications.js';
+import dashboardRouter from './routes/dashboard.js';
 
 dotenv.config();
 
@@ -41,6 +43,8 @@ app.use('/api/team', teamRouter);
 app.use('/api/homepage', homepageRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/applications', applicationsRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'NVIDIA Super Computing Club Server is Healthy!' });

@@ -1,4 +1,4 @@
-import { supabase } from '../../../../lib/supabase';
+import { api } from '../../../../services/api';
 
 const MOCK_EVENTS = [
   {
@@ -26,24 +26,15 @@ const MOCK_EVENTS = [
 
 export default async function eventsHandler(args = []) {
   const showOnlyFeatured = args.includes('--featured');
-  
+
   let events = [];
   try {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .order('date', { ascending: true });
-      
-    if (error || !data || data.length === 0) {
-      events = MOCK_EVENTS;
-    } else {
-      events = data;
-    }
+    const result = await api.get('/events?limit=50');
+    events = result.data || [];
   } catch (err) {
     events = MOCK_EVENTS;
   }
 
-  // Filter if featured flag is passed
   if (showOnlyFeatured) {
     events = events.filter(e => e.is_featured);
   }
@@ -52,7 +43,6 @@ export default async function eventsHandler(args = []) {
     return 'No events found.';
   }
 
-  // Format date helper
   const formatDate = (dateStr) => {
     try {
       const d = new Date(dateStr);
@@ -73,7 +63,7 @@ export default async function eventsHandler(args = []) {
     const loc = e.location.length > 25 ? e.location.substring(0, 22) + '...' : e.location;
     output += `${dateFormatted.padEnd(14)} ${title.padEnd(46)} ${loc}\n`;
   });
-  
+
   output += `--------------------------------------------------------------------------------\n`;
   output += `Tip: Use "events --featured" to filter featured items.`;
 

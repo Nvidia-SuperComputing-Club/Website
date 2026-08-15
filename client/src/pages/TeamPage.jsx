@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 import { api } from '../services/api'
 import { Building2, Sparkles, Award, User } from 'lucide-react'
 import AnimatedTeamSection from '../components/sections/AnimatedTeamSection.jsx'
@@ -30,20 +29,8 @@ export default function TeamPage() {
         setTeam(activeMembers)
       } catch (err) {
         setError(err.message)
-        const fetchSupabase = async () => {
-          const { data, error } = await supabase
-            .from('team_members')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true })
-          if (!error && data) {
-            setTeam(data)
-          }
-          setLoading(false)
-        }
-        fetchSupabase()
       } finally {
-        if (!error) setLoading(false)
+        setLoading(false)
       }
     }
     fetchTeam()
@@ -51,7 +38,6 @@ export default function TeamPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 space-y-20">
-      {/* Page Header */}
       <div className="text-center space-y-4 max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-nvidia/10 border border-nvidia/30 text-nvidia text-xs font-mono">
           <Building2 className="w-3.5 h-3.5" />
@@ -66,7 +52,6 @@ export default function TeamPage() {
         </p>
       </div>
 
-      {/* Mission & History Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="nvidia-card rounded-2xl p-8 space-y-4">
           <div className="w-12 h-12 rounded-xl bg-nvidia/10 border border-nvidia/30 text-nvidia flex items-center justify-center">
@@ -89,7 +74,6 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* Leadership & Officer Team Grid */}
       <div className="space-y-8">
         <div className="text-center space-y-2">
           <span className="text-xs font-mono text-nvidia uppercase">EXECUTIVE BOARD</span>

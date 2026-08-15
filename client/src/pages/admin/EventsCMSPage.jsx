@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../services/api'
 import {
   Plus, Pencil, Trash2, Star, StarOff, Search, X, Save,
   Calendar, MapPin, Tag, AlignLeft, Image as ImageIcon
@@ -29,7 +29,7 @@ export default function EventsCMSPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterCat, setFilterCat] = useState('all')
-  const [modal, setModal] = useState(null) // null | 'create' | 'edit'
+  const [modal, setModal] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [editId, setEditId] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -42,13 +42,14 @@ export default function EventsCMSPage() {
 
   const fetchEvents = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .order('date', { ascending: false })
-    if (error) showToast(error.message, 'error')
-    else setEvents(data ?? [])
-    setLoading(false)
+    try {
+      const result = await api.get('/events')
+      setEvents(result.data ?? [])
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchEvents() }, [])
@@ -69,32 +70,41 @@ export default function EventsCMSPage() {
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const payload = { ...form }
-    let error
-    if (modal === 'create') {
-      ({ error } = await supabase.from('events').insert([payload]))
-    } else {
-      ({ error } = await supabase.from('events').update(payload).eq('id', editId))
+    try {
+      if (modal === 'create') {
+        await api.post('/events', form)
+        showToast('Event created successfully')
+      } else {
+        await api.put(`/events/${editId}`, form)
+        showToast('Event updated')
+      }
+      closeModal()
+      fetchEvents()
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
-    if (error) { showToast(error.message, 'error'); return }
-    showToast(modal === 'create' ? 'Event created successfully' : 'Event updated')
-    closeModal()
-    fetchEvents()
   }
 
   const handleDelete = async (id, title) => {
     if (!window.confirm(`Are you sure you want to delete "${title}"?`)) return
-    const { error } = await supabase.from('events').delete().eq('id', id)
-    if (error) { showToast(error.message, 'error'); return }
-    showToast('Event deleted')
-    fetchEvents()
+    try {
+      await api.delete(`/events/${id}`)
+      showToast('Event deleted')
+      fetchEvents()
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
   const toggleFeatured = async (id, current) => {
-    const { error } = await supabase.from('events').update({ is_featured: !current }).eq('id', id)
-    if (error) { showToast(error.message, 'error'); return }
-    setEvents(events.map(e => e.id === id ? { ...e, is_featured: !current } : e))
+    try {
+      await api.put(`/events/${id}`, { is_featured: !current })
+      setEvents(events.map(e => e.id === id ? { ...e, is_featured: !current } : e))
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
   const filtered = events.filter(e => {
@@ -114,7 +124,6 @@ export default function EventsCMSPage() {
     <div className="space-y-6 max-w-6xl">
       <Toast {...toast} />
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Events CMS</h1>
@@ -129,7 +138,6 @@ export default function EventsCMSPage() {
         </button>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -158,7 +166,6 @@ export default function EventsCMSPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-bg-secondary border border-white/10 rounded-xl overflow-hidden">
         {loading ? (
           <div className="text-center text-gray-500 font-mono text-sm py-16">Loading events...</div>
@@ -224,7 +231,6 @@ export default function EventsCMSPage() {
         )}
       </div>
 
-      {/* Create / Edit Modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4">
           <div className="bg-bg-secondary border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_0_60px_rgba(118,185,0,0.15)]">
@@ -237,7 +243,6 @@ export default function EventsCMSPage() {
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
-              {/* Title */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                   <AlignLeft className="w-3.5 h-3.5 text-nvidia" /> Title *
@@ -247,7 +252,6 @@ export default function EventsCMSPage() {
                   className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
               </div>
 
-              {/* Date & Location */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
@@ -267,7 +271,6 @@ export default function EventsCMSPage() {
                 </div>
               </div>
 
-              {/* Category & Featured */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
@@ -293,17 +296,15 @@ export default function EventsCMSPage() {
                 </div>
               </div>
 
-              {/* Image URL */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-nvidia" /> Image URL (Cloudinary)
+                  <ImageIcon className="w-3.5 h-3.5 text-nvidia" /> Image URL
                 </label>
                 <input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })}
                   placeholder="https://res.cloudinary.com/..."
                   className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
               </div>
 
-              {/* Description */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-gray-300">Description</label>
                 <textarea rows={4} value={form.description}

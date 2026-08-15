@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../services/api'
 import { Save, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react'
 
 const SECTIONS = [
@@ -12,7 +12,7 @@ const SECTIONS = [
       { name: 'subtitle', label: 'Subtitle', type: 'text' },
       { name: 'cta_text', label: 'CTA Button Text', type: 'text' },
       { name: 'cta_link', label: 'CTA Button Link', type: 'text' },
-      { name: 'image_url', label: 'Background Image URL (Cloudinary)', type: 'text' },
+      { name: 'image_url', label: 'Background Image URL', type: 'text' },
     ],
   },
   {
@@ -22,7 +22,7 @@ const SECTIONS = [
     fields: [
       { name: 'title', label: 'Title', type: 'text' },
       { name: 'body', label: 'Body Text', type: 'textarea' },
-      { name: 'image_url', label: 'Image URL (Cloudinary)', type: 'text' },
+      { name: 'image_url', label: 'Image URL', type: 'text' },
     ],
   },
   {
@@ -71,7 +71,6 @@ function SectionCard({ section, initialData, onSave }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    // Populate form from existing data
     const vals = {}
     section.fields.forEach(f => { vals[f.name] = initialData?.[f.name] ?? '' })
     setForm(vals)
@@ -156,26 +155,29 @@ export default function HomepageCMSPage() {
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true)
-      const { data: rows, error } = await supabase
-        .from('homepage_content')
-        .select('section, body')
-      if (error) { showToast(error.message, 'error'); setLoading(false); return }
-      // Convert array to { section: body } map
-      const map = {}
-      ;(rows ?? []).forEach(r => { map[r.section] = r.body })
-      setData(map)
-      setLoading(false)
+      try {
+        const result = await api.get('/homepage')
+        const rows = result.data ?? []
+        const map = {}
+        rows.forEach(r => { map[r.section] = r.body })
+        setData(map)
+      } catch (err) {
+        showToast(err.message, 'error')
+      } finally {
+        setLoading(false)
+      }
     }
     fetchAll()
   }, [])
 
   const handleSave = async (section, formData) => {
-    const { error } = await supabase
-      .from('homepage_content')
-      .upsert({ section, body: formData }, { onConflict: 'section' })
-    if (error) { showToast(error.message, 'error'); return }
-    setData(prev => ({ ...prev, [section]: formData }))
-    showToast('Content saved')
+    try {
+      await api.put(`/homepage/${section}`, { body: formData })
+      setData(prev => ({ ...prev, [section]: formData }))
+      showToast('Content saved')
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
   return (

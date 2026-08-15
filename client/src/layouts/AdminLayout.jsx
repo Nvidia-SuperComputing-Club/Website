@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../services/api'
 import {
   LayoutDashboard, FileText, Calendar, Users, LogOut,
   Menu, X, Cpu, ChevronRight
@@ -22,31 +22,29 @@ export default function AdminLayout() {
   useEffect(() => {
     const devBypass = import.meta.env.DEV && localStorage.getItem('dev_admin_bypass') === 'true'
 
-    // Auth guard — redirect to login if no active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session && !devBypass) {
+    const fetchUser = async () => {
+      try {
+        if (devBypass) {
+          setUser({ email: 'dev-admin@nvidia.club' })
+          setLoading(false)
+          return
+        }
+        const result = await api.get('/auth/me')
+        setUser(result.data)
+      } catch (err) {
+        localStorage.removeItem('nvidia_sc_token')
         navigate('/admin/login')
-      } else {
-        setUser(session?.user || { email: 'dev-admin@nvidia.club' })
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
-    })
+    }
 
-    // Listen for auth changes (logout etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && !devBypass) {
-        navigate('/admin/login')
-      } else {
-        setUser(session?.user || { email: 'dev-admin@nvidia.club' })
-      }
-    })
-
-    return () => subscription.unsubscribe()
+    fetchUser()
   }, [navigate])
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     localStorage.removeItem('dev_admin_bypass')
-    await supabase.auth.signOut()
+    localStorage.removeItem('nvidia_sc_token')
     navigate('/admin/login')
   }
 
