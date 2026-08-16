@@ -40,7 +40,8 @@ const teamSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  id: true
 });
 
 teamSchema.index({ display_order: 1 });

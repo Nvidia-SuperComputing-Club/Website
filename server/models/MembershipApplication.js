@@ -27,7 +27,8 @@ const membershipApplicationSchema = new mongoose.Schema({
     default: 'pending'
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  id: true
 });
 
 membershipApplicationSchema.index({ email: 1 });

@@ -35,7 +35,8 @@ const eventSchema = new mongoose.Schema({
     default: false
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  id: true
 });
 
 eventSchema.index({ date: 1 });

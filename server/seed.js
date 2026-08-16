@@ -27,21 +27,30 @@ const seedData = async () => {
 
     const events = await Event.insertMany([
       {
-        title: 'CUDA Workshop Series',
-        description: 'Hands-on CUDA programming workshop for beginners and intermediates.',
-        date: new Date('2026-08-15T18:00:00Z'),
-        location: 'Room 301, CS Building',
+        title: 'Galgotias NVIDIA DGX H200 AI Sprint 2026',
+        description: '24-hour GPU coding sprint to optimize LLM training kernels on the DGX H200 node.',
+        date: new Date('2026-09-01T09:00:00Z'),
+        location: 'Galgotias University C-Block Auditorium',
+        image_url: '',
+        category: 'hackathon',
+        is_featured: true
+      },
+      {
+        title: 'CUDA Optimization and Parallel Programming Workshop',
+        description: 'Learn warp divergence elimination and shared memory allocation in CUDA C++. Hands-on sessions with NVIDIA Nsight tools.',
+        date: new Date('2026-10-15T14:30:00Z'),
+        location: 'C-Block Lab 302',
         image_url: '',
         category: 'workshop',
         is_featured: true
       },
       {
-        title: 'AI Supercomputing Challenge',
-        description: 'Train deep learning models on cluster environments to solve complex real-world issues.',
-        date: new Date('2026-09-10T09:00:00Z'),
-        location: 'Main Exhibition Hall',
+        title: 'Deep Learning Institute: LLM Quantization Sprints',
+        description: 'Implement AWQ and GPTQ quantization on custom Llama-3 models using NVIDIA TensorRT and TRT-LLM.',
+        date: new Date('2026-11-10T10:00:00Z'),
+        location: 'Online / Hybrid',
         image_url: '',
-        category: 'hackathon',
+        category: 'talk',
         is_featured: false
       }
     ]);
@@ -49,25 +58,36 @@ const seedData = async () => {
 
     const teamMembers = await Team.insertMany([
       {
-        name: 'Alex Chen',
-        role: 'Club President',
-        bio: 'CS major specializing in distributed systems and HPC.',
+        name: 'Daksh Pratap Singh',
+        role: 'Club President / NVIDIA Ambassador',
+        bio: 'Student engineer specializing in CUDA-based high-performance computing, GPU memory design, and parallel architectures. Focuses on research in accelerating sparse matrix operations.',
         image_url: '',
-        github_url: 'https://github.com/alexchen',
-        linkedin_url: 'https://linkedin.com/in/alexchen',
-        twitter_url: 'https://x.com/alexchen',
+        github_url: 'https://github.com/daxforge',
+        linkedin_url: 'https://linkedin.com/in/daksh-pratap',
+        twitter_url: '',
         display_order: 1,
         is_active: true
       },
       {
-        name: 'Sarah Jenkins',
-        role: 'AI Lead',
-        bio: 'Research assistant focusing on large language models and distributed training.',
+        name: 'Alwin Mathew',
+        role: 'Vice President & Lead 3D Developer',
+        bio: 'Creative technologist and frontend engineer. Deep interest in WebGL, Three.js, shaders, and creating immersive 3D user experiences on the web.',
         image_url: '',
-        github_url: 'https://github.com/sarahj',
-        linkedin_url: 'https://linkedin.com/in/sarahj',
+        github_url: 'https://github.com/alwin2134',
+        linkedin_url: 'https://linkedin.com/in/alwin-mathew',
         twitter_url: '',
         display_order: 2,
+        is_active: true
+      },
+      {
+        name: 'Preet Biswas',
+        role: 'Backend & Systems Infrastructure Lead',
+        bio: 'Systems programmer and backend engineer. Focuses on RESTful and GraphQL API services, Postgres database optimization, Docker deployment, and cloud pipelines.',
+        image_url: '',
+        github_url: 'https://github.com/preetbiswas12',
+        linkedin_url: 'https://linkedin.com/in/preet-biswas',
+        twitter_url: '',
+        display_order: 3,
         is_active: true
       }
     ]);

@@ -24,7 +24,8 @@ const homepageContentSchema = new mongoose.Schema({
     default: ''
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  id: true
 });
 
 export default mongoose.model('HomepageContent', homepageContentSchema);

@@ -24,7 +24,8 @@ const adminUserSchema = new mongoose.Schema({
     default: 'admin'
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  id: true
 });
 
 adminUserSchema.pre('save', async function(next) {
