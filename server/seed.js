@@ -18,9 +18,9 @@ const seedData = async () => {
     await HomepageContent.deleteMany({});
 
     const admin = await AdminUser.create({
-      email: 'admin@nvidia-sc.edu',
+      email: 'official.nvidiaaiclub@gmail.com',
       full_name: 'Admin User',
-      password: 'admin123',
+      password: 'nvidia',
       role: 'admin'
     });
     console.log('Admin user created:', admin.email);
