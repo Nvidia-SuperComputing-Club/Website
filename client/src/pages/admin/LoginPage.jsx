@@ -1,16 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../services/api'
-import { Lock, Mail, User } from 'lucide-react'
+import { Lock, Mail } from 'lucide-react'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [isRegister, setIsRegister] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,24 +16,14 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      if (isRegister) {
-        const result = await api.post('/auth/register', {
-          email,
-          password,
-          full_name: fullName
-        })
-        setError('Account created! You can now sign in.')
-        setIsRegister(false)
-      } else {
-        const result = await api.post('/auth/login', {
-          email,
-          password
-        })
-        if (result.data?.token) {
-          localStorage.setItem('nvidia_sc_token', result.data.token)
-        }
-        navigate('/admin/dashboard')
+      const result = await api.post('/auth/login', {
+        email,
+        password
+      })
+      if (result.data?.token) {
+        localStorage.setItem('nvidia_sc_token', result.data.token)
       }
+      navigate('/admin/dashboard')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -69,20 +57,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {isRegister && (
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  placeholder="Full name"
-                  required
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-tertiary border border-white/10 text-white text-sm font-mono placeholder:text-gray-600 focus:outline-none focus:border-nvidia/50 transition-colors"
-                />
-              </div>
-            )}
-
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
@@ -115,20 +89,11 @@ export default function LoginPage() {
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-bg-primary/30 border-t-transparent rounded-full animate-spin" />
-              ) : isRegister ? (
-                'Create Account'
               ) : (
                 'Sign In'
               )}
             </button>
           </form>
-
-          <button
-            onClick={() => { setIsRegister(!isRegister); setError(null) }}
-            className="w-full text-center text-xs font-mono text-gray-400 hover:text-nvidia transition-colors"
-          >
-            {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
-          </button>
 
           {import.meta.env.DEV && (
             <button

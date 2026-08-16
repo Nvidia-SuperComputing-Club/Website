@@ -1,8 +1,11 @@
 import express from 'express';
 import Team from '../models/Team.js';
 import { authenticate, authorizeAdmin } from '../middleware/auth.js';
+import mongoose from 'mongoose';
 
 const router = express.Router();
+
+const validateId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // GET /api/team
 router.get('/', async (req, res) => {
@@ -45,6 +48,15 @@ router.get('/', async (req, res) => {
 // GET /api/team/:id
 router.get('/:id', async (req, res) => {
   try {
+    if (!validateId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid team member ID'
+        }
+      });
+    }
     const member = await Team.findById(req.params.id);
     if (!member) {
       return res.status(404).json({
@@ -90,6 +102,15 @@ router.post('/', authenticate, authorizeAdmin, async (req, res) => {
 // PUT /api/team/:id
 router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
   try {
+    if (!validateId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid team member ID'
+        }
+      });
+    }
     const member = await Team.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
@@ -122,6 +143,15 @@ router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
 // DELETE /api/team/:id (soft delete)
 router.delete('/:id', authenticate, authorizeAdmin, async (req, res) => {
   try {
+    if (!validateId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid team member ID'
+        }
+      });
+    }
     const member = await Team.findByIdAndUpdate(req.params.id, { is_active: false }, { new: true });
     if (!member) {
       return res.status(404).json({

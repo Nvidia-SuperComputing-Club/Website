@@ -1,8 +1,11 @@
 import express from 'express';
 import Event from '../models/Event.js';
 import { authenticate, authorizeAdmin } from '../middleware/auth.js';
+import mongoose from 'mongoose';
 
 const router = express.Router();
+
+const validateId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // GET /api/events
 router.get('/', async (req, res) => {
@@ -55,6 +58,15 @@ router.get('/', async (req, res) => {
 // GET /api/events/:id
 router.get('/:id', async (req, res) => {
   try {
+    if (!validateId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid event ID'
+        }
+      });
+    }
     const event = await Event.findById(req.params.id);
     if (!event) {
       return res.status(404).json({
@@ -100,6 +112,15 @@ router.post('/', authenticate, authorizeAdmin, async (req, res) => {
 // PUT /api/events/:id
 router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
   try {
+    if (!validateId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid event ID'
+        }
+      });
+    }
     const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
@@ -132,6 +153,15 @@ router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
 // DELETE /api/events/:id
 router.delete('/:id', authenticate, authorizeAdmin, async (req, res) => {
   try {
+    if (!validateId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid event ID'
+        }
+      });
+    }
     const event = await Event.findByIdAndDelete(req.params.id);
     if (!event) {
       return res.status(404).json({
