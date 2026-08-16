@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -20,26 +19,6 @@ connectDB();
 const app = express();
 
 app.use(helmet());
-
-const normalizeOrigin = (origin) => {
-  if (typeof origin !== 'string') return origin
-  return origin.replace(/\/+$/, '')
-}
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    const allowed = process.env.CORS_ORIGIN || 'http://localhost:5173'
-    const normalizedAllowed = normalizeOrigin(allowed)
-    if (!origin || normalizeOrigin(origin) === normalizedAllowed) {
-      callback(null, true)
-    } else {
-      callback(new Error(`Origin ${origin} not allowed by CORS`))
-    }
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
