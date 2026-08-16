@@ -66,15 +66,20 @@ export default function AnimatedTeamSection({ members }) {
           }}
         >
           {member.image_url ? (
-            <img
-              src={
-                member.image_url.includes("cloudinary.com")
-                  ? member.image_url.replace("/upload/", "/upload/f_auto,q_auto/")
-                  : member.image_url
-              }
-              alt={member.name}
-              className="w-full h-full object-cover"
-            />
+            <div className="relative w-full h-full">
+              <img
+                src={
+                  member.image_url.includes("cloudinary.com")
+                    ? member.image_url.replace("/upload/", "/upload/f_auto,q_auto/")
+                    : member.image_url
+                }
+                alt={member.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                <p className="text-[10px] md:text-xs font-mono text-white truncate text-center">{member.name}</p>
+              </div>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-nvidia/10 text-nvidia font-display font-bold text-2xl">
               {member.name

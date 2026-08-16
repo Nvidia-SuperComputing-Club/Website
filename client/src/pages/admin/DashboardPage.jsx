@@ -123,7 +123,7 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {recentApps.map((app) => (
-                  <tr key={app.id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
+                  <tr key={app._id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
                     <td className="px-5 py-3 text-white font-semibold">{app.full_name}</td>
                     <td className="px-5 py-3 text-gray-400 hidden sm:table-cell">{app.email}</td>
                     <td className="px-5 py-3 text-gray-500 hidden md:table-cell">

@@ -61,7 +61,7 @@ export default function EventsCMSPage() {
       date: ev.date?.slice(0, 16) ?? '', location: ev.location ?? '',
       category: ev.category, image_url: ev.image_url ?? '', is_featured: ev.is_featured,
     })
-    setEditId(ev.id)
+    setEditId(ev._id)
     setModal('edit')
   }
 
@@ -101,7 +101,7 @@ export default function EventsCMSPage() {
   const toggleFeatured = async (id, current) => {
     try {
       await api.put(`/events/${id}`, { is_featured: !current })
-      setEvents(events.map(e => e.id === id ? { ...e, is_featured: !current } : e))
+      setEvents(events.map(e => e._id === id ? { ...e, is_featured: !current } : e))
     } catch (err) {
       showToast(err.message, 'error')
     }
@@ -184,7 +184,7 @@ export default function EventsCMSPage() {
             </thead>
             <tbody>
               {filtered.map(ev => (
-                <tr key={ev.id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
+                <tr key={ev._id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
                   <td className="px-5 py-3 text-white font-semibold max-w-xs truncate">{ev.title}</td>
                   <td className="px-5 py-3 text-gray-400 hidden md:table-cell">
                     {ev.date ? new Date(ev.date).toLocaleDateString() : '—'}
@@ -196,7 +196,7 @@ export default function EventsCMSPage() {
                   </td>
                   <td className="px-5 py-3">
                     <button
-                      onClick={() => toggleFeatured(ev.id, ev.is_featured)}
+                      onClick={() => toggleFeatured(ev._id, ev.is_featured)}
                       title="Toggle featured"
                       className="transition-colors"
                     >
@@ -216,7 +216,7 @@ export default function EventsCMSPage() {
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(ev.id, ev.title)}
+                        onClick={() => handleDelete(ev._id, ev.title)}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
                         title="Delete"
                       >
