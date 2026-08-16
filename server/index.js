@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -16,12 +17,17 @@ dotenv.config();
 
 connectDB();
 
-const app = express();
+const app = express()
 
 app.set('trust proxy', 1)
 
-app.use(helmet());
-app.use(express.json());
+app.use(cors({
+  origin: '*',
+  credentials: false,
+}))
+
+app.use(helmet())
+app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
 const limiter = rateLimit({
