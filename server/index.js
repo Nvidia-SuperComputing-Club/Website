@@ -21,8 +21,21 @@ const app = express();
 
 app.use(helmet());
 
+const normalizeOrigin = (origin) => {
+  if (typeof origin !== 'string') return origin
+  return origin.replace(/\/+$/, '')
+}
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    const allowed = process.env.CORS_ORIGIN || 'http://localhost:5173'
+    const normalizedAllowed = normalizeOrigin(allowed)
+    if (!origin || normalizeOrigin(origin) === normalizedAllowed) {
+      callback(null, true)
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`))
+    }
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));
