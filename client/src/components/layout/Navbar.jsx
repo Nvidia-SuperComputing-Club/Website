@@ -81,19 +81,23 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={() => setIsTerminalOpen(true)}
-              className="px-3.5 py-2 rounded-lg bg-obsidian-900 border border-nvidia/40 text-nvidia text-xs font-mono font-semibold hover:bg-nvidia/10 hover:border-nvidia transition-all flex items-center gap-2 shadow-nvidia-glow"
+              className="px-4 py-2 rounded-full bg-obsidian-900 border border-nvidia/40 text-nvidia text-xs font-mono font-semibold hover:bg-nvidia/10 hover:border-nvidia transition-all flex items-center gap-2.5 shadow-nvidia-glow group active:scale-[0.98]"
               aria-label="Open CLI Terminal"
             >
-              <TerminalIcon className="w-4 h-4 text-nvidia" />
+              <span className="w-6 h-6 rounded-full bg-nvidia/15 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <TerminalIcon className="w-3.5 h-3.5 text-nvidia" />
+              </span>
               <span>CLI Terminal</span>
             </button>
 
             <Link
               to="/events"
-              className="relative group overflow-hidden px-5 py-2.5 rounded-lg bg-nvidia text-black font-display font-semibold text-sm transition-all duration-300 hover:bg-nvidia-light shadow-nvidia-glow hover:shadow-nvidia-glow-lg flex items-center gap-2"
+              className="relative group overflow-hidden px-5 py-2 rounded-full bg-nvidia text-black font-display font-bold text-xs transition-all duration-300 hover:bg-nvidia-light shadow-nvidia-glow hover:shadow-nvidia-glow-lg flex items-center gap-2.5 active:scale-[0.98]"
             >
-              <UserPlus className="w-4 h-4" />
               <span>Join Club</span>
+              <span className="w-6 h-6 rounded-full bg-black/15 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                <UserPlus className="w-3.5 h-3.5" />
+              </span>
             </Link>
           </div>
 
