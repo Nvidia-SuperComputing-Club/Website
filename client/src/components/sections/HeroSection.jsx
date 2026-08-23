@@ -100,12 +100,12 @@ export default function HeroSection() {
   // GSAP Text Animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. Stagger letters reveal
-      gsap.to('.char-reveal', {
+      // 1. Line-by-line cinematic reveal
+      gsap.to('.line-reveal', {
         opacity: 1,
         y: 0,
-        stagger: 0.02,
-        duration: 0.8,
+        stagger: 0.15,
+        duration: 1.2,
         ease: 'power4.out',
         delay: 0.2
       });
@@ -132,17 +132,6 @@ export default function HeroSection() {
     return () => ctx.revert();
   }, []);
 
-  // Splitting letters helper
-  const renderSplitLetters = (text, className = '') => {
-    return text.split('').map((char, index) => (
-      <span 
-        key={index} 
-        className={`inline-block opacity-0 translate-y-[40px] char-reveal ${className}`}
-      >
-        {char === ' ' ? '\u00A0' : char}
-      </span>
-    ));
-  };
 
   return (
     <section 
@@ -159,31 +148,40 @@ export default function HeroSection() {
       <div className="max-w-7xl mx-auto w-full px-6 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center z-10">
         
         {/* Left Side: Headline & Copy */}
-        <div className="md:col-span-6 flex flex-col text-center md:text-left pt-6 md:pt-0">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-obsidian-900/90 border border-nvidia/40 backdrop-blur-md shadow-nvidia-glow self-center md:self-start mb-6">
-            <Building2 className="w-3.5 h-3.5 text-nvidia" />
-            <span className="text-[11px] sm:text-xs font-mono text-gray-200">
-              GALGOTIAS UNIVERSITY <span className="text-nvidia font-bold">NVIDIA CLUB</span>
-            </span>
-          </div>
+        <div className="md:col-span-6 flex flex-col text-center md:text-left pt-6 md:pt-0 z-10 relative">
           
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold tracking-tight mb-6 text-white leading-none">
-            <div className="block overflow-hidden pb-1">
-              {renderSplitLetters("NVIDIA", "bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent")}
+          <div className="md:p-8 md:bg-obsidian-900/30 md:backdrop-blur-xl md:border md:border-white/10 md:rounded-3xl md:shadow-2xl">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-obsidian-900/90 border border-nvidia/40 backdrop-blur-md shadow-nvidia-glow self-center md:self-start mb-6">
+              <Building2 className="w-3.5 h-3.5 text-nvidia" />
+              <span className="text-[11px] sm:text-xs font-mono text-gray-200">
+                GALGOTIAS UNIVERSITY <span className="text-nvidia font-bold">NVIDIA CLUB</span>
+              </span>
             </div>
-            <div className="block overflow-hidden pb-1 mt-1">
-              {renderSplitLetters("Supercomputing", "bg-gradient-to-r from-white via-neutral-100 to-nvidia bg-clip-text text-transparent")}
-            </div>
-            <div className="block overflow-hidden pb-1 mt-1">
-              {renderSplitLetters("Club", "text-nvidia")}
-            </div>
-          </h1>
+            
+            <h1 className="text-[3.5rem] sm:text-6xl lg:text-[5.5rem] font-display font-black tracking-tight mb-6 leading-[1.1] uppercase">
+              <div className="overflow-hidden pb-2">
+                <div className="line-reveal opacity-0 translate-y-[100%] text-white drop-shadow-md">
+                  NVIDIA
+                </div>
+              </div>
+              <div className="overflow-hidden pb-4">
+                <div className="line-reveal opacity-0 translate-y-[100%] text-nvidia-gradient">
+                  Supercomputing
+                </div>
+              </div>
+              <div className="overflow-hidden pb-2">
+                <div className="line-reveal opacity-0 translate-y-[100%] text-gray-400 flex items-center gap-4 md:gap-6 justify-center md:justify-start">
+                  CLUB
+                </div>
+              </div>
+            </h1>
 
-          <p className="hero-subtitle opacity-0 text-gray-300 text-xs sm:text-sm lg:text-base max-w-xl mb-8 leading-relaxed font-sans">
-            The premier student technology society at Galgotias University powered by our flagship{' '}
-            <span className="text-nvidia font-mono font-bold">NVIDIA DGX H200</span> supercomputer,
-            deep learning research, parallel CUDA kernels, and software hackathons.
-          </p>
+            <p className="hero-subtitle opacity-0 text-gray-200 text-xs sm:text-sm lg:text-base max-w-xl mb-0 md:mb-8 leading-relaxed font-sans">
+              The premier student technology society at Galgotias University powered by our flagship{' '}
+              <span className="text-nvidia font-mono font-bold">NVIDIA DGX H200</span> supercomputer,
+              deep learning research, parallel CUDA kernels, and software hackathons.
+            </p>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3.5 mb-8 justify-center md:justify-start">
             <Link

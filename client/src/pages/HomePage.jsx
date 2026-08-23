@@ -101,7 +101,8 @@ function Sequence({ progress }) {
 /* ── Text content overlays ─────────────────────────────────────────────── */
 
 function Content({ progress }) {
-  const h = fade(progress, 0, 0.19, 0.06);
+  // Fix: Make the first hero section fully visible at scroll 0, fading out as progress nears 0.19
+  const h = clamp((0.19 - progress) / 0.06);
   const a = fade(progress, 0.14, 0.43);
   const n = fade(progress, 0.38, 0.68);
   const c = fade(progress, 0.63, 0.88);
@@ -113,24 +114,60 @@ function Content({ progress }) {
   });
 
   return (
-    <div className="dgx-copy-layer">
-      <section className="dgx-copy hero-copy" style={s(h, 0, 22)}>
-        <p className="eyebrow">NVIDIA AI COMPUTING</p>
-        <h1>
-          NVIDIA
-          <br />
-          <span>DGX H200</span>
+    <div className="dgx-copy-layer z-10 pointer-events-none">
+      <section
+        className="pointer-events-auto"
+        style={{
+          ...s(h, 0, 22),
+          position: 'absolute',
+          left: 'clamp(24px, 8vw, 120px)',
+          top: '50%',
+          transform: `translateY(-50%) translate(${(1 - h) * 0}px, ${(1 - h) * 22}px)`,
+          opacity: h,
+          maxWidth: 'min(520px, 46vw)',
+        }}
+      >
+        <p style={{
+          fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+          fontSize: '10px',
+          letterSpacing: '0.2em',
+          color: '#76B900',
+          textTransform: 'uppercase',
+          marginBottom: '20px',
+          fontWeight: 600,
+        }}>Galgotias University — NVIDIA Club</p>
+
+        <h1 style={{
+          fontFamily: 'Audiowide, sans-serif',
+          fontSize: 'clamp(2.8rem, 6vw, 5.5rem)',
+          fontWeight: 900,
+          lineHeight: 1.0,
+          letterSpacing: '-0.02em',
+          color: '#ffffff',
+          marginBottom: '24px',
+        }}>
+          <span style={{ display: 'block', color: '#76B900' }}>NVIDIA</span>
+          <span style={{ display: 'block' }}>Supercomputing</span>
+          <span style={{ display: 'block' }}>Club</span>
         </h1>
-        <p className="kicker">Power without limits.</p>
-        <p>
-          The flagship AI supercomputer, re-engineered for a world that trains,
-          infers, and never stops.
+
+        <div style={{ width: '48px', height: '3px', background: '#76B900', marginBottom: '24px', borderRadius: '2px' }} />
+
+        <p style={{
+          fontFamily: 'Inter, sans-serif',
+          fontSize: 'clamp(0.8rem, 1.2vw, 1rem)',
+          color: '#d1d5db',
+          lineHeight: 1.7,
+          maxWidth: '420px',
+        }}>
+          The premier student technology society at Galgotias University.
+          Deep learning, parallel computing &amp; the future of AI.
         </p>
       </section>
 
       <section className="dgx-copy copy-left" style={s(a, -34)}>
         <p className="eyebrow">01 — ARCHITECTURE</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(22px, 3vw, 48px)' }}>
           Precision-engineered
           <br />
           for scale.
@@ -147,7 +184,7 @@ function Content({ progress }) {
 
       <section className="dgx-copy copy-right" style={s(n, 34)}>
         <p className="eyebrow">02 — INTERCONNECT</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(22px, 3vw, 48px)' }}>
           Instant-scale
           <br />
           interconnect, redefined.
@@ -161,7 +198,7 @@ function Content({ progress }) {
 
       <section className="dgx-copy copy-left compute-copy" style={s(c, -34)}>
         <p className="eyebrow">03 — PERFORMANCE</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(22px, 3vw, 48px)' }}>
           Immense compute,
           <br />
           purpose-built.
@@ -175,10 +212,10 @@ function Content({ progress }) {
 
       <section className="dgx-copy final-copy" style={s(e, 0, 22)}>
         <p className="eyebrow">THE FRONTIER STARTS HERE</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(24px, 3.5vw, 56px)' }}>
           Train everything.
           <br />
-          <span>Wait for nothing.</span>
+          <span style={{ color: '#76B900', WebkitTextFillColor: '#76B900' }}>Wait for nothing.</span>
         </h2>
         <p>DGX H200. Engineered for scale, built for the frontier of AI.</p>
         <div className="actions">
@@ -238,6 +275,16 @@ export default function HomePage() {
       <section id="story" ref={storyRef} className="dgx-story">
         <div className="stage">
           <div className="ambient" />
+          {/* Full-stage subtle overlay so centered text is always readable */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'rgba(1,8,3,0.35)'
+          }} />
+          {/* Left-side strong gradient so left-positioned text always sits on dark bg */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'linear-gradient(to right, rgba(1,8,3,0.88) 0%, rgba(1,8,3,0.70) 28%, rgba(1,8,3,0.20) 52%, transparent 70%)'
+          }} />
           <Sequence progress={progress} />
           <Content progress={progress} />
           <div className="progress">
