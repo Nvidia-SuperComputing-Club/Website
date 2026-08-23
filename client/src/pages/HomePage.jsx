@@ -11,16 +11,7 @@ import { EventCountdown } from "../components/sections/EventCountdown.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SPOTLIGHT_EVENT = {
-  title: "Galgotias NVIDIA DGX H200 AI Sprint 2026",
-  date: "2026-09-01",
-  time: "09:00 AM IST",
-  location: "Galgotias University C-Block Auditorium",
-  summary:
-    "Join the premier 24-hour GPU coding competition. Train, fine-tune, and optimize 70B+ parameter LLMs live on our flagship NVIDIA DGX H200 node with total prizes of \u20B92,50,000.",
-  registrationUrl: "https://galgotiasuniversity.edu.in",
-};
-
+import { eventsService } from "../services/supabaseService.js";
 const FRAME_SOURCES = Object.entries(
   import.meta.glob("../assets/dgx/*.webp", {
     eager: true,
@@ -236,9 +227,29 @@ function Content({ progress }) {
 export default function HomePage() {
   const storyRef = useRef(null);
   const [progress, setProgress] = useState(0);
+  const [spotlightEvent, setSpotlightEvent] = useState(null);
   const frameCounterRef = useRef(null);
   const scrollHintRef = useRef(null);
   const progressBarRef = useRef(null);
+
+  useEffect(() => {
+    const fetchSpotlight = async () => {
+      try {
+        const data = await eventsService.getEvents();
+        const todayStr = new Date().toISOString().split('T')[0];
+        const upcoming = (data || []).filter(e => {
+          const evDate = e.date?.slice(0, 10) || e.date;
+          return evDate >= todayStr && (e.is_published !== false);
+        });
+        if (upcoming.length > 0) {
+          setSpotlightEvent(upcoming[0]);
+        }
+      } catch (err) {
+        console.error("Failed to load spotlight event", err);
+      }
+    };
+    fetchSpotlight();
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -304,9 +315,11 @@ export default function HomePage() {
 
       <AboutSection />
 
-      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <EventCountdown event={SPOTLIGHT_EVENT} />
-      </section>
+      {spotlightEvent && (
+        <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <EventCountdown event={spotlightEvent} />
+        </section>
+      )}
 
       <FeaturedSection />
       <CommunitiesSection />

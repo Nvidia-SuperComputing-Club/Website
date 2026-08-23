@@ -50,7 +50,7 @@ export const EventCountdown = ({ event }) => {
             </h3>
 
             <p className="text-gray-300 text-sm md:text-base line-clamp-2">
-              {event.summary}
+              {event.summary || event.description}
             </p>
 
             <div className="flex flex-wrap gap-4 text-xs font-mono text-gray-400 pt-2">
@@ -95,9 +95,9 @@ export const EventCountdown = ({ event }) => {
               ))}
             </div>
 
-            {event.registrationUrl && (
+            {(event.registrationUrl || event.registration_url) && (
               <a
-                href={event.registrationUrl}
+                href={event.registrationUrl || event.registration_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-nvidia hover:bg-nvidia-light text-black font-display font-bold text-sm shadow-nvidia-glow transition-all flex items-center justify-between sm:justify-center gap-3 group active:scale-[0.98]"
