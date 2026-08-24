@@ -132,8 +132,11 @@ export default function AdminLayout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         {/* Top Header */}
-        <header className="h-16 bg-bg-secondary border-b border-white/10 flex items-center px-8 lg:px-10 gap-4 shrink-0">
+        <header className="h-16 bg-[#0a0a0a] border-b border-white/10 flex items-center px-8 lg:px-10 gap-4 shrink-0">
           <button
             className="lg:hidden text-gray-400 hover:text-white transition-colors"
             onClick={() => setSidebarOpen(true)}
@@ -145,14 +148,14 @@ export default function AdminLayout() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-mono text-gray-400 hover:text-nvidia transition-colors"
+            className="text-xs font-mono text-gray-400 hover:text-[#76B900] transition-colors"
           >
             ↗ View Site
           </a>
         </header>
 
         {/* Page Content */}
-        <main id="admin-main" className="flex-1 p-8 lg:p-10 overflow-auto">
+        <main id="main-content" className="flex-1 p-8 lg:p-10 overflow-auto" tabIndex={-1}>
           <Outlet />
         </main>
       </div>
