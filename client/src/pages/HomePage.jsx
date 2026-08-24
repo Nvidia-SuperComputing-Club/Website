@@ -242,7 +242,8 @@ export default function HomePage() {
           return evDate >= todayStr && (e.is_published !== false);
         });
         if (upcoming.length > 0) {
-          setSpotlightEvent(upcoming[0]);
+          const featured = upcoming.find(e => e.is_featured === true);
+          setSpotlightEvent(featured || upcoming[0]);
         }
       } catch (err) {
         console.error("Failed to load spotlight event", err);

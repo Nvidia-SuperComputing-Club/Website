@@ -17,7 +17,7 @@ export default function FeaturedSection() {
         const todayStr = new Date().toISOString().split('T')[0]
         const upcoming = (data || []).filter(e => {
           const evDate = e.date?.slice(0, 10) || e.date
-          return evDate >= todayStr && (e.is_published !== false)
+          return evDate >= todayStr && (e.is_published !== false) && e.is_featured === true
         }).slice(0, 3)
         setEvents(upcoming)
       } catch (err) {
@@ -64,7 +64,7 @@ export default function FeaturedSection() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono text-nvidia bg-nvidia/10 px-2.5 py-1 rounded-full border border-nvidia/20 font-bold tracking-wider">
-                    {event.category ? event.category.toUpperCase() : 'EVENT'}
+                    {event.type ? event.type.toUpperCase() : 'EVENT'}
                   </span>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 font-mono">
                     <Calendar className="w-3.5 h-3.5 text-nvidia" />
