@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Twitter, Linkedin, Github, Mail, Disc as Discord, ArrowUpRight, Heart } from 'lucide-react'
+import { homepageService } from '../../services/supabaseService.js'
 
 const LOGO_URL = "https://cdn.discordapp.com/icons/1502687570532892822/63f1bd18e0e26427b501578177600e0c.webp?size=240&quality=lossless"
 
@@ -9,15 +11,47 @@ const navLinks = [
   { label: 'Team', href: '/team' },
 ]
 
-const socialLinks = [
-  { icon: <Discord className="w-5 h-5" />, href: 'https://discord.gg/nvidiaclub', label: 'Discord' },
-  { icon: <Github className="w-5 h-5" />, href: 'https://github.com/Nvidia-SuperComputing-Club', label: 'GitHub' },
-  { icon: <Linkedin className="w-5 h-5" />, href: 'https://linkedin.com/company/nvidia-sc-gu', label: 'LinkedIn' },
-  { icon: <Twitter className="w-5 h-5" />, href: 'https://twitter.com/nvidiasc_gu', label: 'Twitter' },
-  { icon: <Mail className="w-5 h-5" />, href: 'mailto:nvidia.club@galgotiasuniversity.edu.in', label: 'Email' },
-]
-
 export default function Footer() {
+  const [footerData, setFooterData] = useState({
+    description: "The official AI & Supercomputing Club dedicated to GPU computing, deep learning research, and parallel CUDA programming. Empowering the next generation of AI innovators.",
+    discord_url: "https://discord.gg/nvidiaclub",
+    github_url: "https://github.com/Nvidia-SuperComputing-Club",
+    linkedin_url: "https://linkedin.com/company/nvidia-sc-gu",
+    twitter_url: "https://twitter.com/nvidiasc_gu",
+    email: "nvidia.club@galgotiasuniversity.edu.in"
+  })
+
+  useEffect(() => {
+    let mounted = true
+    const fetchFooter = async () => {
+      try {
+        const data = await homepageService.getHomepageContent()
+        const footerSection = data?.find(item => item.section === 'footer')
+        if (footerSection && footerSection.body && mounted) {
+          setFooterData(prev => ({
+            ...prev,
+            ...footerSection.body
+          }))
+        }
+      } catch (err) {
+        console.error("Failed to fetch footer content:", err)
+      }
+    }
+    fetchFooter()
+    return () => { mounted = false }
+  }, [])
+
+  const socialLinks = [
+    { icon: <Discord className="w-5 h-5" />, href: footerData.discord_url, label: 'Discord' },
+    { icon: <Github className="w-5 h-5" />, href: footerData.github_url, label: 'GitHub' },
+    { icon: <Linkedin className="w-5 h-5" />, href: footerData.linkedin_url, label: 'LinkedIn' },
+    { icon: <Twitter className="w-5 h-5" />, href: footerData.twitter_url, label: 'Twitter' },
+    { icon: <Mail className="w-5 h-5" />, href: `mailto:${footerData.email}`, label: 'Email' },
+  ]
+
+  // Helper for rendering discord invite domain purely for visual display
+  const discordInviteCode = footerData.discord_url?.replace('https://discord.gg/', '') || 'nvidiaclub'
+
   return (
     <footer className="relative bg-[#010803] pt-20 pb-10 overflow-hidden border-t border-white/5">
       {/* Background Glow */}
@@ -45,7 +79,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-md">
-              The official AI & Supercomputing Club dedicated to GPU computing, deep learning research, and parallel CUDA programming. Empowering the next generation of AI innovators.
+              {footerData.description}
             </p>
             
             <div className="flex items-center gap-3 mt-8">
@@ -91,9 +125,9 @@ export default function Footer() {
             </div>
             <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 backdrop-blur-sm">
               <p className="text-xs text-gray-400 mb-2">Join our Discord server</p>
-              <a href="https://discord.gg" target="_blank" rel="noopener noreferrer" className="text-sm text-white font-medium flex items-center gap-2 hover:text-nvidia transition-colors group">
+              <a href={footerData.discord_url} target="_blank" rel="noopener noreferrer" className="text-sm text-white font-medium flex items-center gap-2 hover:text-nvidia transition-colors group">
                 <Discord className="w-4 h-4 text-[#5865F2] group-hover:text-nvidia transition-colors" />
-                discord.gg/nvidiaclub
+                discord.gg/{discordInviteCode}
               </a>
             </div>
           </div>
@@ -124,3 +158,4 @@ export default function Footer() {
     </footer>
   )
 }
+

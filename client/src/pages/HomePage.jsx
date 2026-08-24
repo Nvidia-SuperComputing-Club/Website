@@ -92,7 +92,7 @@ function Sequence({ progress }) {
 
 /* ── Text content overlays ─────────────────────────────────────────────── */
 
-function Content({ progress }) {
+function Content({ progress, heroData }) {
   // Fix: Make the first hero section fully visible at scroll 0, fading out as progress nears 0.19
   const h = clamp((0.19 - progress) / 0.06);
   const a = fade(progress, 0.14, 0.43);
@@ -115,20 +115,27 @@ function Content({ progress }) {
         }}
       >
         <p className="font-mono text-[10px] sm:text-[11px] tracking-widest text-nvidia uppercase mb-5 font-bold">
-          Galgotias University — NVIDIA Club
+          {heroData?.subtitle || "Galgotias University — NVIDIA Club"}
         </p>
 
         <h1 className="font-display font-black leading-none tracking-tight text-white mb-6 text-[clamp(2.4rem,8vw,5.5rem)]">
-          <span className="block text-nvidia">NVIDIA</span>
-          <span className="block">Supercomputing</span>
-          <span className="block">Club</span>
+          {heroData?.title ? (
+            heroData.title.split('\n').map((line, i) => (
+              <span key={i} className={`block ${i === 0 ? 'text-nvidia' : ''}`}>{line}</span>
+            ))
+          ) : (
+            <>
+              <span className="block text-nvidia">NVIDIA</span>
+              <span className="block">Supercomputing</span>
+              <span className="block">Club</span>
+            </>
+          )}
         </h1>
 
         <div className="w-12 h-[3px] bg-nvidia mb-6 rounded-sm" />
 
         <p className="font-sans text-sm sm:text-base text-gray-300 leading-relaxed max-w-[420px]">
-          The premier student technology society at Galgotias University.
-          Deep learning, parallel computing &amp; the future of AI.
+          {heroData?.cta_text || "The premier student technology society at Galgotias University. Deep learning, parallel computing & the future of AI."}
         </p>
       </section>
 
@@ -204,16 +211,24 @@ export default function HomePage() {
   const storyRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [spotlightEvent, setSpotlightEvent] = useState(null);
+  const [cmsData, setCmsData] = useState({ hero: null, about: null });
   const frameCounterRef = useRef(null);
   const scrollHintRef = useRef(null);
   const progressBarRef = useRef(null);
 
   useEffect(() => {
-    const fetchSpotlight = async () => {
+    let mounted = true;
+    const fetchSpotlightAndCMS = async () => {
       try {
-        const data = await eventsService.getEvents();
+        const [eventsData, homepageData] = await Promise.all([
+          eventsService.getEvents().catch(() => []),
+          homepageService.getHomepageContent().catch(() => [])
+        ]);
+        
+        if (!mounted) return;
+
         const todayStr = new Date().toISOString().split('T')[0];
-        const upcoming = (data || []).filter(e => {
+        const upcoming = (eventsData || []).filter(e => {
           const evDate = e.date?.slice(0, 10) || e.date;
           return evDate >= todayStr && (e.is_published !== false);
         });
@@ -221,11 +236,21 @@ export default function HomePage() {
           const featured = upcoming.find(e => e.is_featured === true);
           setSpotlightEvent(featured || upcoming[0]);
         }
+
+        if (homepageData && homepageData.length > 0) {
+          const heroSection = homepageData.find(s => s.section === 'hero');
+          const aboutSection = homepageData.find(s => s.section === 'about');
+          setCmsData({
+            hero: heroSection?.body || null,
+            about: aboutSection?.body || null
+          });
+        }
       } catch (err) {
-        console.error("Failed to load spotlight event", err);
+        console.error("Failed to load homepage data", err);
       }
     };
-    fetchSpotlight();
+    fetchSpotlightAndCMS();
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
@@ -274,7 +299,7 @@ export default function HomePage() {
             background: 'linear-gradient(to right, rgba(1,8,3,0.88) 0%, rgba(1,8,3,0.70) 28%, rgba(1,8,3,0.20) 52%, transparent 70%)'
           }} />
           <Sequence progress={progress} />
-          <Content progress={progress} />
+          <Content progress={progress} heroData={cmsData.hero} />
           <div className="progress">
             <span ref={progressBarRef} />
           </div>
@@ -288,9 +313,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      
-
-      <AboutSection />
+      <AboutSection aboutData={cmsData.about} />
 
       {spotlightEvent && (
         <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
