@@ -10,11 +10,11 @@ const navLinks = [
 ]
 
 const socialLinks = [
-  { icon: <Discord className="w-4 h-4" />, href: 'https://discord.gg', label: 'Discord' },
-  { icon: <Github className="w-4 h-4" />, href: 'https://github.com', label: 'GitHub' },
-  { icon: <Linkedin className="w-4 h-4" />, href: 'https://linkedin.com', label: 'LinkedIn' },
-  { icon: <Twitter className="w-4 h-4" />, href: 'https://twitter.com', label: 'Twitter' },
-  { icon: <Mail className="w-4 h-4" />, href: 'mailto:nvidia.club@galgotiasuniversity.edu.in', label: 'Email' },
+  { icon: <Discord className="w-5 h-5" />, href: 'https://discord.gg/nvidiaclub', label: 'Discord' },
+  { icon: <Github className="w-5 h-5" />, href: 'https://github.com/Nvidia-SuperComputing-Club', label: 'GitHub' },
+  { icon: <Linkedin className="w-5 h-5" />, href: 'https://linkedin.com/company/nvidia-sc-gu', label: 'LinkedIn' },
+  { icon: <Twitter className="w-5 h-5" />, href: 'https://twitter.com/nvidiasc_gu', label: 'Twitter' },
+  { icon: <Mail className="w-5 h-5" />, href: 'mailto:nvidia.club@galgotiasuniversity.edu.in', label: 'Email' },
 ]
 
 export default function Footer() {
