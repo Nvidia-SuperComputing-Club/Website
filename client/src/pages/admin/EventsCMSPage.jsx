@@ -336,9 +336,39 @@ export default function EventsCMSPage() {
                 <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-nvidia" /> Image URL
                 </label>
-                <input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })}
-                  placeholder="https://res.cloudinary.com/..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
+                <div className="flex gap-2">
+                  <input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })}
+                    placeholder="https://res.cloudinary.com/..."
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors" />
+                  <label className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-obsidian-900 border border-white/10 text-white text-xs font-mono hover:border-nvidia transition-colors cursor-pointer disabled:opacity-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files[0]
+                        if (!file) return
+                        if (file.size > 5 * 1024 * 1024) {
+                          alert('Image exceeds the 5MB size limit.')
+                          return
+                        }
+                        setSaving(true)
+                        try {
+                          const { uploadToCloudinary } = await import('../../services/cloudinary.js')
+                          const result = await uploadToCloudinary(file, 'events')
+                          setForm({ ...form, image_url: result.url })
+                        } catch (err) {
+                          console.error('Image upload failed:', err)
+                          alert('Failed to upload image. Try another file.')
+                        } finally {
+                          setSaving(false)
+                        }
+                      }}
+                      className="hidden"
+                      disabled={saving}
+                    />
+                    Upload
+                  </label>
+                </div>
               </div>
 
               <div className="space-y-1.5">

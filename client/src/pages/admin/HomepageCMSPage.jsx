@@ -69,6 +69,7 @@ function SectionCard({ section, initialData, onSave }) {
   const [expanded, setExpanded] = useState(false)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     const vals = {}
@@ -81,6 +82,28 @@ function SectionCard({ section, initialData, onSave }) {
     setSaving(true)
     await onSave(section.key, form)
     setSaving(false)
+  }
+
+  const handleFileUpload = async (e, fieldName) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image exceeds the 5MB size limit.')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const { uploadToCloudinary } = await import('../../services/cloudinary.js')
+      const result = await uploadToCloudinary(file, 'homepage')
+      setForm(prev => ({ ...prev, [fieldName]: result.url }))
+    } catch (err) {
+      console.error('Image upload failed:', err)
+      alert('Failed to upload image. Try another file.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -117,19 +140,33 @@ function SectionCard({ section, initialData, onSave }) {
                   className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors resize-none"
                 />
               ) : (
-                <input
-                  type="text"
-                  value={form[f.name] ?? ''}
-                  onChange={e => setForm({ ...form, [f.name]: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={form[f.name] ?? ''}
+                    onChange={e => setForm({ ...form, [f.name]: e.target.value })}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors"
+                  />
+                  {f.name.includes('image') && (
+                    <label className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-obsidian-900 border border-white/10 text-white text-xs font-mono hover:border-nvidia transition-colors cursor-pointer disabled:opacity-50">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleFileUpload(e, f.name)}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                      {uploading ? 'Uploading...' : 'Upload'}
+                    </label>
+                  )}
+                </div>
               )}
             </div>
           ))}
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploading}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-nvidia text-black font-bold text-xs font-mono hover:bg-nvidia-light transition-colors disabled:opacity-50 shadow-nvidia-glow"
             >
               <Save className="w-3.5 h-3.5" />
