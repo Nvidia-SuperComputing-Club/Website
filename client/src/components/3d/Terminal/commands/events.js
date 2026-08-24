@@ -31,6 +31,7 @@ export default async function eventsHandler(args = []) {
   try {
     events = await eventsService.getEvents();
   } catch (err) {
+    // Only fallback if there's a real crash/error, not just an empty array
     events = MOCK_EVENTS;
   }
 
@@ -39,7 +40,7 @@ export default async function eventsHandler(args = []) {
   }
 
   if (events.length === 0) {
-    return 'No events found.';
+    return 'No events found in the database.';
   }
 
   const formatDate = (dateStr) => {

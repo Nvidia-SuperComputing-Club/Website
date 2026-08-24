@@ -33,10 +33,7 @@ export default async function teamHandler(args = []) {
     const data = await teamService.getTeamMembers();
     members = data.filter(m => m.is_active !== false);
   } catch (err) {
-    members = MOCK_TEAM;
-  }
-
-  if (members.length === 0) {
+    // Only fallback if the database actually crashes/errors, not if it's just empty
     members = MOCK_TEAM;
   }
 
@@ -67,9 +64,13 @@ export default async function teamHandler(args = []) {
   output += `${'NAME'.padEnd(28)} ${'ROLE'}\n`;
   output += `--------------------------------------------------------------------------------\n`;
 
-  members.forEach(m => {
-    output += `${m.name.padEnd(28)} ${m.role}\n`;
-  });
+  if (members.length === 0) {
+    output += `No active team members found in the database.\n`;
+  } else {
+    members.forEach(m => {
+      output += `${m.name.padEnd(28)} ${m.role}\n`;
+    });
+  }
 
   output += `--------------------------------------------------------------------------------\n`;
   output += `Tip: Use "team <name>" to inspect bio & social details (e.g., team daksh).`;
