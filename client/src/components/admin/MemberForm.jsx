@@ -66,7 +66,7 @@ export default function MemberForm({ form, setForm, onSubmit, onCancel, saving, 
       const compressedWebP = await compressImage(file)
       setUploading(true)
       const { uploadToCloudinary } = await import('../../services/cloudinary.js')
-      const result = await uploadToCloudinary(file, 'team')
+      const result = await uploadToCloudinary(compressedWebP, 'team')
       setForm(prev => ({ ...prev, image_url: result.url }))
     } catch (err) {
       console.error('Image upload failed:', err)
