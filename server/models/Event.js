@@ -27,7 +27,7 @@ const eventSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['hackathon', 'workshop', 'talk', 'meetup', 'other'],
+    enum: ['hackathon', 'workshop', 'talk', 'meetup', 'social', 'other'],
     default: 'other'
   },
   is_featured: {
