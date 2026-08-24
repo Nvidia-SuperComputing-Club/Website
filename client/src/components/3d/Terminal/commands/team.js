@@ -51,9 +51,12 @@ export default async function teamHandler(args = []) {
     let profile = `MEMBER PROFILE: ${match.name}\n`;
     profile += `--------------------------------------------------------------------------------\n`;
     profile += `Role:        ${match.role}\n`;
+    if (match.department)   profile += `Department:  ${match.department}\n`;
+    if (match.year)         profile += `Year:        ${match.year}\n`;
     if (match.github_url)   profile += `GitHub:      ${match.github_url}\n`;
     if (match.linkedin_url) profile += `LinkedIn:    ${match.linkedin_url}\n`;
-    if (match.twitter_url)  profile += `Twitter:     ${match.twitter_url}\n`;
+    if (match.twitter_url)  profile += `Twitter/X:   ${match.twitter_url}\n`;
+    if (match.email)        profile += `Email:       ${match.email}\n`;
     profile += `--------------------------------------------------------------------------------\n\n`;
     profile += `Bio:\n${match.bio || 'No bio listed.'}\n`;
     return profile;
