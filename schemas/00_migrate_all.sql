@@ -17,3 +17,4 @@ $$;
 \i events.sql
 \i team.sql
 \i applications.sql
+\i homepage.sql

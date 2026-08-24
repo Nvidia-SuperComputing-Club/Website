@@ -45,11 +45,12 @@ function Sequence({ progress }) {
     }
 
     const onResize = () => {
-      const idx = Math.round(progress * (TOTAL_FRAMES - 1));
+      // Use the latest frame from the ref to avoid stale closure on progress
+      const idx = prevFrame.current === -1 ? 0 : prevFrame.current;
       draw(imagesRef.current[idx]);
     };
-    addEventListener("resize", onResize);
-    return () => removeEventListener("resize", onResize);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const FRAME_W = 1920;

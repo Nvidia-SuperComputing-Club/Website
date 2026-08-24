@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+import { authService } from '../services/supabaseService.js'
 import {
   LayoutDashboard, FileText, Calendar, Users, LogOut,
   Menu, X, Cpu, ChevronRight
@@ -29,8 +29,9 @@ export default function AdminLayout() {
           setLoading(false)
           return
         }
-        const result = await api.get('/auth/me')
-        setUser(result.data)
+        const currentUser = await authService.getCurrentUser()
+        if (!currentUser) throw new Error("No user found")
+        setUser(currentUser)
       } catch (err) {
         localStorage.removeItem('nvidia_sc_token')
         navigate('/admin/login')
@@ -132,6 +133,9 @@ export default function AdminLayout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         {/* Top Header */}
         <header className="h-16 bg-bg-secondary border-b border-white/10 flex items-center px-8 lg:px-10 gap-4 shrink-0">
           <button
@@ -152,7 +156,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page Content */}
-        <main id="admin-main" className="flex-1 p-8 lg:p-10 overflow-auto">
+        <main id="main-content" className="flex-1 p-8 lg:p-10 overflow-auto" tabIndex={-1}>
           <Outlet />
         </main>
       </div>

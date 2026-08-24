@@ -5,7 +5,7 @@ import {
   Calendar, MapPin, Tag, AlignLeft, Image as ImageIcon
 } from 'lucide-react'
 
-const CATEGORIES = ['workshop', 'hackathon', 'talk', 'social']
+const CATEGORIES = ['event', 'workshop', 'hackathon', 'seminar', 'competition', 'social', 'talk']
 const EMPTY_FORM = {
   title: '', description: '', date: '', location: '',
   type: 'workshop', image_url: '', is_featured: false, is_published: true,

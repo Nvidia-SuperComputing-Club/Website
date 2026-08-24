@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.events (
   time          TEXT,                    -- e.g. "10:00 AM IST"
   location      TEXT,
   type          TEXT                     DEFAULT 'event'
-                CHECK (type IN ('event', 'workshop', 'hackathon', 'seminar', 'competition')),
+                CHECK (type IN ('event', 'workshop', 'hackathon', 'seminar', 'competition', 'social', 'talk')),
   image_url     TEXT,
   registration_url TEXT,
   is_featured   BOOLEAN                  NOT NULL DEFAULT false,
