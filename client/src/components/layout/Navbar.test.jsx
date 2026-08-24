@@ -1,22 +1,31 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import Navbar from '../components/layout/Navbar';
+import { MemoryRouter } from 'react-router-dom';
+import Navbar from './Navbar';
+
+const renderNavbar = () =>
+  render(
+    <MemoryRouter>
+      <Navbar />
+    </MemoryRouter>
+  );
 
 describe('Navbar', () => {
   it('renders club name', () => {
-    render(<Navbar />);
+    renderNavbar();
     expect(screen.getByText(/NVIDIA/i)).toBeInTheDocument();
   });
 
   it('renders navigation links', () => {
-    render(<Navbar />);
+    renderNavbar();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Events')).toBeInTheDocument();
     expect(screen.getByText('Team')).toBeInTheDocument();
   });
 
   it('renders CLI Terminal button', () => {
-    render(<Navbar />);
-    expect(screen.getByText('Terminal')).toBeInTheDocument();
+    renderNavbar();
+    expect(screen.getByText(/CLI Terminal/i)).toBeInTheDocument();
   });
 });
+

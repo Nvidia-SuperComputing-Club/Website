@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+import { authService } from '../services/supabaseService.js'
 import {
   LayoutDashboard, FileText, Calendar, Users, LogOut,
   Menu, X, Cpu, ChevronRight
@@ -29,8 +29,9 @@ export default function AdminLayout() {
           setLoading(false)
           return
         }
-        const result = await api.get('/auth/me')
-        setUser(result.data)
+        const currentUser = await authService.getCurrentUser()
+        if (!currentUser) throw new Error("No user found")
+        setUser(currentUser)
       } catch (err) {
         localStorage.removeItem('nvidia_sc_token')
         navigate('/admin/login')

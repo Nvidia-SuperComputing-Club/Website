@@ -28,7 +28,7 @@ const PILLARS = [
   }
 ]
 
-export default function AboutSection() {
+export default function AboutSection({ aboutData }) {
   const [headerRef, headerVisible] = useInView()
   const [cardsRef, cardsVisible] = useInView({ threshold: 0.1 })
 
@@ -42,11 +42,11 @@ export default function AboutSection() {
           <Terminal className="w-3.5 h-3.5" />
           <span>GALGOTIAS CHAPTER PILLARS</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-display text-white">
-          POWERING NEXT-GEN GPU INNOVATORS
+        <h2 className="text-3xl sm:text-4xl font-display text-white whitespace-pre-line">
+          {aboutData?.title || "POWERING NEXT-GEN GPU INNOVATORS"}
         </h2>
-        <p className="text-gray-400 text-sm max-w-xl mx-auto font-sans">
-          Bridging classroom computer science at Galgotias University with cutting-edge industrial AI acceleration on NVIDIA DGX H200 architecture.
+        <p className="text-gray-400 text-sm max-w-xl mx-auto font-sans whitespace-pre-line">
+          {aboutData?.body || "Bridging classroom computer science at Galgotias University with cutting-edge industrial AI acceleration on NVIDIA DGX H200 architecture."}
         </p>
       </div>
 

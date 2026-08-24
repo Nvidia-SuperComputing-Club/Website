@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../../services/api'
+import { authService } from '../../services/supabaseService.js'
 import { Lock, Mail } from 'lucide-react'
 
 export default function LoginPage() {
@@ -16,12 +16,9 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const result = await api.post('/auth/login', {
-        email,
-        password
-      })
-      if (result.data?.token) {
-        localStorage.setItem('nvidia_sc_token', result.data.token)
+      const data = await authService.login(email, password)
+      if (data?.session?.access_token) {
+        localStorage.setItem('nvidia_sc_token', data.session.access_token)
       }
       navigate('/admin/dashboard')
     } catch (err) {

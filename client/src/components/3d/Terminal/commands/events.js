@@ -1,38 +1,16 @@
-import { api } from '../../../../services/api';
+import { eventsService } from '../../../../services/supabaseService.js';
 
-const MOCK_EVENTS = [
-  {
-    title: "Galgotias NVIDIA DGX H200 AI Sprint 2026",
-    date: "2026-09-01T09:00:00",
-    location: "Galgotias University C-Block Auditorium",
-    is_featured: true,
-    description: "24-hour GPU coding sprint to optimize LLM training kernels."
-  },
-  {
-    title: "CUDA Optimization and Parallel Programming Workshop",
-    date: "2026-10-15T14:30:00",
-    location: "C-Block Lab 302",
-    is_featured: false,
-    description: "Learn warp divergence elimination and shared memory allocation in CUDA C++."
-  },
-  {
-    title: "Deep Learning Institute: LLM Quantization Sprints",
-    date: "2026-11-10T10:00:00",
-    location: "Online / Hybrid",
-    is_featured: false,
-    description: "Implement AWQ and GPTQ quantization on custom Llama-3 models."
-  }
-];
+// Removed MOCK_EVENTS entirely to strictly rely on Supabase DB.
 
 export default async function eventsHandler(args = []) {
   const showOnlyFeatured = args.includes('--featured');
 
   let events = [];
   try {
-    const result = await api.get('/events?limit=50');
-    events = result.data || [];
+    events = await eventsService.getEvents();
   } catch (err) {
-    events = MOCK_EVENTS;
+    // Only fallback if there's a real crash/error, not just an empty array
+    events = [];
   }
 
   if (showOnlyFeatured) {
@@ -40,7 +18,7 @@ export default async function eventsHandler(args = []) {
   }
 
   if (events.length === 0) {
-    return 'No events found.';
+    return 'No events found in the database.';
   }
 
   const formatDate = (dateStr) => {

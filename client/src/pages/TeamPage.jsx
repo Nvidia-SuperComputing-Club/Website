@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../services/api'
+import { teamService } from '../services/supabaseService.js'
 import { Building2, Sparkles, Award, User } from 'lucide-react'
 import AnimatedTeamSection from '../components/sections/AnimatedTeamSection.jsx'
 
@@ -23,8 +23,7 @@ export default function TeamPage() {
       try {
         setLoading(true)
         setError(null)
-        const result = await api.get('/team?limit=50')
-        const data = result.data || []
+        const data = await teamService.getTeamMembers()
         const activeMembers = data.filter(m => m.is_active !== false)
         setTeam(activeMembers)
       } catch (err) {

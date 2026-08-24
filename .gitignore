@@ -3,3 +3,6 @@ dist/
 .legion/
 .kilo/
 .env
+
+.env.local
+*.env.local

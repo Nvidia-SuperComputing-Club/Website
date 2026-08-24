@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { api } from '../services/api'
+import { eventsService } from '../services/supabaseService.js'
 import { Calendar, MapPin, ExternalLink, Image as ImageIcon, X, Filter } from 'lucide-react'
 
 export default function EventsPage() {
@@ -15,8 +15,8 @@ export default function EventsPage() {
       try {
         setLoading(true)
         setError(null)
-        const result = await api.get('/events?limit=50')
-        setEvents(result.data || [])
+        const data = await eventsService.getEvents()
+        setEvents(data || [])
       } catch (err) {
         setError(err.message)
       } finally {
@@ -40,7 +40,7 @@ export default function EventsPage() {
       const evDate = normDate(ev.date?.slice(0, 10) || ev.date)
       const isPast = evDate < todayStr
       const matchesTab = selectedTab === 'past' ? isPast : !isPast
-      const matchesType = selectedType === 'all' || ev.category === selectedType
+      const matchesType = selectedType === 'all' || ev.type === selectedType
       return matchesTab && matchesType
     })
   }, [events, selectedTab, selectedType, todayStr])
@@ -141,7 +141,7 @@ export default function EventsPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-1 rounded bg-nvidia/10 border border-nvidia/30 text-nvidia text-[11px] font-mono font-bold uppercase">
-                      {event.category}
+                      {event.type}
                     </span>
                     <div className="flex items-center gap-1 text-xs font-mono text-gray-400">
                       <Calendar className="w-3.5 h-3.5 text-nvidia" />

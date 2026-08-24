@@ -11,16 +11,7 @@ import { EventCountdown } from "../components/sections/EventCountdown.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SPOTLIGHT_EVENT = {
-  title: "Galgotias NVIDIA DGX H200 AI Sprint 2026",
-  date: "2026-09-01",
-  time: "09:00 AM IST",
-  location: "Galgotias University C-Block Auditorium",
-  summary:
-    "Join the premier 24-hour GPU coding competition. Train, fine-tune, and optimize 70B+ parameter LLMs live on our flagship NVIDIA DGX H200 node with total prizes of \u20B92,50,000.",
-  registrationUrl: "https://galgotiasuniversity.edu.in",
-};
-
+import { eventsService, homepageService } from "../services/supabaseService.js";
 const FRAME_SOURCES = Object.entries(
   import.meta.glob("../assets/dgx/*.webp", {
     eager: true,
@@ -54,6 +45,7 @@ function Sequence({ progress }) {
     }
 
     const onResize = () => {
+      // Use the latest frame from the ref to avoid stale closure on progress
       const idx = prevFrame.current === -1 ? 0 : prevFrame.current;
       draw(imagesRef.current[idx]);
     };
@@ -100,8 +92,9 @@ function Sequence({ progress }) {
 
 /* ── Text content overlays ─────────────────────────────────────────────── */
 
-function Content({ progress }) {
-  const h = fade(progress, 0, 0.19, 0.06);
+function Content({ progress, heroData }) {
+  // Fix: Make the first hero section fully visible at scroll 0, fading out as progress nears 0.19
+  const h = clamp((0.19 - progress) / 0.06);
   const a = fade(progress, 0.14, 0.43);
   const n = fade(progress, 0.38, 0.68);
   const c = fade(progress, 0.63, 0.88);
@@ -113,24 +106,42 @@ function Content({ progress }) {
   });
 
   return (
-    <div className="dgx-copy-layer">
-      <section className="dgx-copy hero-copy" style={s(h, 0, 22)}>
-        <p className="eyebrow">NVIDIA AI COMPUTING</p>
-        <h1>
-          NVIDIA
-          <br />
-          <span>DGX H200</span>
+    <div className="dgx-copy-layer z-10 pointer-events-none">
+      <section
+        className="pointer-events-auto absolute top-1/2 left-6 md:left-[8vw] lg:left-[120px] w-full max-w-[calc(100vw-48px)] md:max-w-[46vw] lg:max-w-[520px]"
+        style={{
+          opacity: h,
+          transform: `translateY(-50%) translate(0px, ${(1 - h) * 22}px)`,
+        }}
+      >
+        <p className="font-mono text-[10px] sm:text-[11px] tracking-widest text-nvidia uppercase mb-5 font-bold">
+          {heroData?.subtitle || "Galgotias University — NVIDIA Club"}
+        </p>
+
+        <h1 className="font-display font-black leading-none tracking-tight text-white mb-6 text-[clamp(2.4rem,8vw,5.5rem)]">
+          {heroData?.title ? (
+            heroData.title.split('\n').map((line, i) => (
+              <span key={i} className={`block ${i === 0 ? 'text-nvidia' : ''}`}>{line}</span>
+            ))
+          ) : (
+            <>
+              <span className="block text-nvidia">NVIDIA</span>
+              <span className="block">Supercomputing</span>
+              <span className="block">Club</span>
+            </>
+          )}
         </h1>
-        <p className="kicker">Power without limits.</p>
-        <p>
-          The flagship AI supercomputer, re-engineered for a world that trains,
-          infers, and never stops.
+
+        <div className="w-12 h-[3px] bg-nvidia mb-6 rounded-sm" />
+
+        <p className="font-sans text-sm sm:text-base text-gray-300 leading-relaxed max-w-[420px]">
+          {heroData?.cta_text || "The premier student technology society at Galgotias University. Deep learning, parallel computing & the future of AI."}
         </p>
       </section>
 
       <section className="dgx-copy copy-left" style={s(a, -34)}>
         <p className="eyebrow">01 — ARCHITECTURE</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(22px, 3vw, 48px)' }}>
           Precision-engineered
           <br />
           for scale.
@@ -147,7 +158,7 @@ function Content({ progress }) {
 
       <section className="dgx-copy copy-right" style={s(n, 34)}>
         <p className="eyebrow">02 — INTERCONNECT</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(22px, 3vw, 48px)' }}>
           Instant-scale
           <br />
           interconnect, redefined.
@@ -161,7 +172,7 @@ function Content({ progress }) {
 
       <section className="dgx-copy copy-left compute-copy" style={s(c, -34)}>
         <p className="eyebrow">03 — PERFORMANCE</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(22px, 3vw, 48px)' }}>
           Immense compute,
           <br />
           purpose-built.
@@ -175,10 +186,10 @@ function Content({ progress }) {
 
       <section className="dgx-copy final-copy" style={s(e, 0, 22)}>
         <p className="eyebrow">THE FRONTIER STARTS HERE</p>
-        <h2>
+        <h2 style={{ fontFamily: 'Audiowide, sans-serif', fontSize: 'clamp(24px, 3.5vw, 56px)' }}>
           Train everything.
           <br />
-          <span>Wait for nothing.</span>
+          <span style={{ color: '#76B900', WebkitTextFillColor: '#76B900' }}>Wait for nothing.</span>
         </h2>
         <p>DGX H200. Engineered for scale, built for the frontier of AI.</p>
         <div className="actions">
@@ -199,9 +210,48 @@ function Content({ progress }) {
 export default function HomePage() {
   const storyRef = useRef(null);
   const [progress, setProgress] = useState(0);
+  const [spotlightEvent, setSpotlightEvent] = useState(null);
+  const [cmsData, setCmsData] = useState({ hero: null, about: null });
   const frameCounterRef = useRef(null);
   const scrollHintRef = useRef(null);
   const progressBarRef = useRef(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchSpotlightAndCMS = async () => {
+      try {
+        const [eventsData, homepageData] = await Promise.all([
+          eventsService.getEvents().catch(() => []),
+          homepageService.getHomepageContent().catch(() => [])
+        ]);
+        
+        if (!mounted) return;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const upcoming = (eventsData || []).filter(e => {
+          const evDate = e.date?.slice(0, 10) || e.date;
+          return evDate >= todayStr && (e.is_published !== false);
+        });
+        if (upcoming.length > 0) {
+          const featured = upcoming.find(e => e.is_featured === true);
+          setSpotlightEvent(featured || upcoming[0]);
+        }
+
+        if (homepageData && homepageData.length > 0) {
+          const heroSection = homepageData.find(s => s.section === 'hero');
+          const aboutSection = homepageData.find(s => s.section === 'about');
+          setCmsData({
+            hero: heroSection?.body || null,
+            about: aboutSection?.body || null
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load homepage data", err);
+      }
+    };
+    fetchSpotlightAndCMS();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -238,8 +288,18 @@ export default function HomePage() {
       <section id="story" ref={storyRef} className="dgx-story">
         <div className="stage">
           <div className="ambient" />
+          {/* Full-stage subtle overlay so centered text is always readable */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'rgba(1,8,3,0.35)'
+          }} />
+          {/* Left-side strong gradient so left-positioned text always sits on dark bg */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'linear-gradient(to right, rgba(1,8,3,0.88) 0%, rgba(1,8,3,0.70) 28%, rgba(1,8,3,0.20) 52%, transparent 70%)'
+          }} />
           <Sequence progress={progress} />
-          <Content progress={progress} />
+          <Content progress={progress} heroData={cmsData.hero} />
           <div className="progress">
             <span ref={progressBarRef} />
           </div>
@@ -253,13 +313,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      
+      <AboutSection aboutData={cmsData.about} />
 
-      <AboutSection />
-
-      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <EventCountdown event={SPOTLIGHT_EVENT} />
-      </section>
+      {spotlightEvent && (
+        <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <EventCountdown event={spotlightEvent} />
+        </section>
+      )}
 
       <FeaturedSection />
       <CommunitiesSection />

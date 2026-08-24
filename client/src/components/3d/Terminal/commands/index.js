@@ -59,7 +59,16 @@ export async function parseAndExecute(inputStr, currentDir) {
       output = whoamiHandler();
       return { type: 'output', output };
     case 'about':
-      output = aboutHandler();
+      try {
+        const { homepageService } = await import('../../../../services/supabaseService.js');
+        const data = await homepageService.getHomepageContent();
+        const aboutData = data.find(s => s.section === 'about')?.body;
+        output = `NVIDIA Super Computing Club (NVIDIA-SC)
+----------------------------------------
+${aboutData?.body || 'Bridging academic computer science with high-performance industrial AI acceleration.'}`;
+      } catch (err) {
+        output = `Error fetching about details from database.`;
+      }
       return { type: 'output', output };
     case 'events':
       output = await eventsHandler(args);
@@ -68,13 +77,19 @@ export async function parseAndExecute(inputStr, currentDir) {
       output = await teamHandler(args);
       return { type: 'output', output };
     case 'stats':
-      output = `NVIDIA-SC CLUB STATISTICS:
+      try {
+        const { dashboardService } = await import('../../../../services/supabaseService.js');
+        const stats = await dashboardService.getStats();
+        output = `NVIDIA-SC CLUB STATISTICS:
 ----------------------------------------
-Active Student Members:   150+
-Events Hosted:            20+
-Completed GPU Projects:   10+
-Academic Partners:        5+
+Active Student Members:   ${stats.team}
+Events Hosted:            ${stats.events}
+Pending Applications:     ${stats.applications}
+Upcoming Events:          ${stats.upcoming}
 Active Cluster Capacity:  100% (4x NVIDIA H200 PCIe nodes)`;
+      } catch (err) {
+        output = `Error fetching live statistics from database.`;
+      }
       return { type: 'output', output };
     case 'sudo':
       output = sudoHandler();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../services/api'
+import { teamService } from '../../services/supabaseService.js'
 import MemberForm from '../../components/admin/MemberForm.jsx'
 import {
   Plus, Pencil, Trash2, Search, X,
@@ -43,8 +43,8 @@ export default function TeamCMSPage() {
   const fetchMembers = async () => {
     setLoading(true)
     try {
-      const result = await api.get('/team')
-      setMembers(result.data ?? [])
+      const data = await teamService.getTeamMembers()
+      setMembers(data || [])
     } catch (err) {
       showToast(err.message, 'error')
     } finally {
@@ -62,7 +62,7 @@ export default function TeamCMSPage() {
       linkedin_url: m.linkedin_url ?? '', twitter_url: m.twitter_url ?? '',
       display_order: m.display_order ?? 0, is_active: m.is_active,
     })
-    setEditId(m._id)
+    setEditId(m.id || m._id)
     setModal('edit')
   }
 
@@ -74,10 +74,10 @@ export default function TeamCMSPage() {
     try {
       const payload = { ...form, display_order: Number(form.display_order) }
       if (modal === 'create') {
-        await api.post('/team', payload)
+        await teamService.createTeamMember(payload)
         showToast('Member added successfully')
       } else {
-        await api.put(`/team/${editId}`, payload)
+        await teamService.updateTeamMember(editId, payload)
         showToast('Member updated')
       }
       closeModal()
@@ -92,7 +92,7 @@ export default function TeamCMSPage() {
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to remove "${name}" from the team? (This will hide them from the public page)`)) return
     try {
-      await api.delete(`/team/${id}`)
+      await teamService.deleteTeamMember(id)
       showToast('Member removed (soft-deleted)')
       fetchMembers()
     } catch (err) {
@@ -102,8 +102,8 @@ export default function TeamCMSPage() {
 
   const toggleActive = async (id, current) => {
     try {
-      await api.put(`/team/${id}`, { is_active: !current })
-      setMembers(members.map(m => m._id === id ? { ...m, is_active: !current } : m))
+      await teamService.updateTeamMember(id, { is_active: !current })
+      setMembers(members.map(m => (m.id || m._id) === id ? { ...m, is_active: !current } : m))
       showToast(!current ? 'Member is now visible' : 'Member is now hidden')
     } catch (err) {
       showToast(err.message, 'error')
@@ -135,7 +135,7 @@ export default function TeamCMSPage() {
     }))
 
     try {
-      await Promise.all(updates.map(m => api.put(`/team/${m._id}`, { display_order: m.display_order })))
+      await Promise.all(updates.map(m => teamService.updateTeamMember(m.id || m._id, { display_order: m.display_order })))
       showToast('Display order updated successfully')
     } catch (err) {
       showToast('Failed to save display order: ' + err.message, 'error')
@@ -219,7 +219,7 @@ export default function TeamCMSPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m, idx) => (
             <div
-              key={m._id}
+              key={m.id || m._id}
               draggable
               onDragStart={e => handleDragStart(e, idx)}
               onDragOver={e => handleDragOver(e, idx)}
@@ -256,11 +256,11 @@ export default function TeamCMSPage() {
                   className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={() => toggleActive(m._id, m.is_active)} title={m.is_active ? 'Hide' : 'Show'}
+                <button onClick={() => toggleActive(m.id || m._id, m.is_active)} title={m.is_active ? 'Hide' : 'Show'}
                   className="p-1.5 rounded-lg text-gray-400 hover:text-nvidia hover:bg-nvidia/10 transition-all">
                   {m.is_active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </button>
-                <button onClick={() => handleDelete(m._id, m.name)} title="Remove"
+                <button onClick={() => handleDelete(m.id || m._id, m.name)} title="Remove"
                   className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -293,7 +293,7 @@ export default function TeamCMSPage() {
             <tbody>
               {filtered.map((m, idx) => (
                 <tr
-                  key={m._id}
+                  key={m.id || m._id}
                   draggable
                   onDragStart={e => handleDragStart(e, idx)}
                   onDragOver={e => handleDragOver(e, idx)}
@@ -335,11 +335,11 @@ export default function TeamCMSPage() {
                         className="p-1.5 rounded bg-obsidian-950 border border-white/5 text-gray-400 hover:text-white hover:border-white/20 transition-all">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => toggleActive(m._id, m.is_active)} title={m.is_active ? 'Hide' : 'Show'}
+                      <button onClick={() => toggleActive(m.id || m._id, m.is_active)} title={m.is_active ? 'Hide' : 'Show'}
                         className="p-1.5 rounded bg-obsidian-950 border border-white/5 text-gray-400 hover:text-nvidia hover:border-nvidia/30 transition-all">
                         {m.is_active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       </button>
-                      <button onClick={() => handleDelete(m._id, m.name)} title="Remove"
+                      <button onClick={() => handleDelete(m.id || m._id, m.name)} title="Remove"
                         className="p-1.5 rounded bg-obsidian-950 border border-white/5 text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

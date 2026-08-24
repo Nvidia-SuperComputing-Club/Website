@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../services/api'
+import { dashboardService, applicationService } from '../../services/supabaseService.js'
 import {
   Calendar, Users, TrendingUp, Plus, Clock, RefreshCw
 } from 'lucide-react'
 
 function StatCard({ icon: Icon, label, value, color = 'nvidia' }) {
   const colorMap = {
-    'nvidia': { bg: 'bg-[#76B900]/15', border: 'border-[#76B900]/30', text: 'text-[#76B900]' },
+    'nvidia': { bg: 'bg-nvidia/15', border: 'border-nvidia/30', text: 'text-nvidia' },
     'yellow-400': { bg: 'bg-yellow-400/15', border: 'border-yellow-400/30', text: 'text-yellow-400' }
   };
   const theme = colorMap[color] || colorMap['nvidia'];
@@ -34,12 +34,12 @@ export default function DashboardPage() {
     setLoading(true)
     try {
       const [statsRes, appsRes] = await Promise.all([
-        api.get('/dashboard/stats'),
-        api.get('/dashboard/applications')
+        dashboardService.getStats(),
+        applicationService.getRecentApplications(5)
       ])
 
-      setStats(statsRes.data)
-      setRecentApps(appsRes.data ?? [])
+      setStats(statsRes || { events: 0, team: 0, upcoming: 0, applications: 0 })
+      setRecentApps(appsRes || [])
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err)
     } finally {
@@ -129,7 +129,7 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {recentApps.map((app) => (
-                  <tr key={app._id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
+                  <tr key={app.id || app._id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
                     <td className="px-5 py-3 text-white font-semibold">{app.full_name}</td>
                     <td className="px-5 py-3 text-gray-400 hidden sm:table-cell">{app.email}</td>
                     <td className="px-5 py-3 text-gray-500 hidden md:table-cell">

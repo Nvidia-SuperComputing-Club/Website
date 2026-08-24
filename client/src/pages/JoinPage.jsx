@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from '../services/api';
+import { applicationService } from '../services/supabaseService.js';
 import {
   Building2, Server, Award, Zap, ShieldCheck, Clock, MapPin,
   Send, CheckCircle2, Cpu, User, Mail, GraduationCap, Sparkles
@@ -44,11 +44,11 @@ export default function JoinPage() {
     setError(null);
 
     try {
-      await api.post('/applications', {
-        full_name: formData.fullName,
+      await applicationService.submitApplication({
+        name: formData.fullName,
         email: formData.email,
-        year_major: formData.yearMajor,
-        interests: selectedInterests
+        year: formData.yearMajor,
+        why_join: selectedInterests.join(', ')
       });
       setSubmitted(true);
     } catch (err) {
