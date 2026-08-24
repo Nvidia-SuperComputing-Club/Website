@@ -1,4 +1,4 @@
-import { api } from '../../../../services/api';
+import { teamService } from '../../../../services/supabaseService.js';
 
 const MOCK_TEAM = [
   {
@@ -30,8 +30,7 @@ const MOCK_TEAM = [
 export default async function teamHandler(args = []) {
   let members = [];
   try {
-    const result = await api.get('/team?limit=50');
-    const data = result.data || [];
+    const data = await teamService.getTeamMembers();
     members = data.filter(m => m.is_active !== false);
   } catch (err) {
     members = MOCK_TEAM;

@@ -1,4 +1,4 @@
-import { api } from '../../../../services/api';
+import { eventsService } from '../../../../services/supabaseService.js';
 
 const MOCK_EVENTS = [
   {
@@ -29,8 +29,7 @@ export default async function eventsHandler(args = []) {
 
   let events = [];
   try {
-    const result = await api.get('/events?limit=50');
-    events = result.data || [];
+    events = await eventsService.getEvents();
   } catch (err) {
     events = MOCK_EVENTS;
   }

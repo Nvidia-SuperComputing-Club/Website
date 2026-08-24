@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../services/api'
+import { homepageService } from '../../services/supabaseService.js'
 import { Save, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react'
 
 const SECTIONS = [
@@ -156,8 +156,8 @@ export default function HomepageCMSPage() {
     const fetchAll = async () => {
       setLoading(true)
       try {
-        const result = await api.get('/homepage')
-        const rows = result.data ?? []
+        const data = await homepageService.getHomepageContent()
+        const rows = data || []
         const map = {}
         rows.forEach(r => { map[r.section] = r.body })
         setData(map)
@@ -172,7 +172,7 @@ export default function HomepageCMSPage() {
 
   const handleSave = async (section, formData) => {
     try {
-      await api.put(`/homepage/${section}`, { body: formData })
+      await homepageService.updateHomepageSection(section, formData)
       setData(prev => ({ ...prev, [section]: formData }))
       showToast('Content saved')
     } catch (err) {
