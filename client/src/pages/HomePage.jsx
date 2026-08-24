@@ -11,7 +11,7 @@ import { EventCountdown } from "../components/sections/EventCountdown.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
-import { eventsService } from "../services/supabaseService.js";
+import { eventsService, homepageService } from "../services/supabaseService.js";
 const FRAME_SOURCES = Object.entries(
   import.meta.glob("../assets/dgx/*.webp", {
     eager: true,
