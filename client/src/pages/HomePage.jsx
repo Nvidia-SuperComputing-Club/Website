@@ -108,50 +108,25 @@ function Content({ progress }) {
   return (
     <div className="dgx-copy-layer z-10 pointer-events-none">
       <section
-        className="pointer-events-auto"
+        className="pointer-events-auto absolute top-1/2 left-6 md:left-[8vw] lg:left-[120px] w-full max-w-[calc(100vw-48px)] md:max-w-[46vw] lg:max-w-[520px]"
         style={{
-          ...s(h, 0, 22),
-          position: 'absolute',
-          left: 'clamp(24px, 8vw, 120px)',
-          top: '50%',
-          transform: `translateY(-50%) translate(${(1 - h) * 0}px, ${(1 - h) * 22}px)`,
           opacity: h,
-          maxWidth: 'min(520px, 46vw)',
+          transform: `translateY(-50%) translate(0px, ${(1 - h) * 22}px)`,
         }}
       >
-        <p style={{
-          fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-          fontSize: '10px',
-          letterSpacing: '0.2em',
-          color: '#76B900',
-          textTransform: 'uppercase',
-          marginBottom: '20px',
-          fontWeight: 600,
-        }}>Galgotias University — NVIDIA Club</p>
+        <p className="font-mono text-[10px] sm:text-[11px] tracking-widest text-nvidia uppercase mb-5 font-bold">
+          Galgotias University — NVIDIA Club
+        </p>
 
-        <h1 style={{
-          fontFamily: 'Audiowide, sans-serif',
-          fontSize: 'clamp(2.8rem, 6vw, 5.5rem)',
-          fontWeight: 900,
-          lineHeight: 1.0,
-          letterSpacing: '-0.02em',
-          color: '#ffffff',
-          marginBottom: '24px',
-        }}>
-          <span style={{ display: 'block', color: '#76B900' }}>NVIDIA</span>
-          <span style={{ display: 'block' }}>Supercomputing</span>
-          <span style={{ display: 'block' }}>Club</span>
+        <h1 className="font-display font-black leading-none tracking-tight text-white mb-6 text-[clamp(2.4rem,8vw,5.5rem)]">
+          <span className="block text-nvidia">NVIDIA</span>
+          <span className="block">Supercomputing</span>
+          <span className="block">Club</span>
         </h1>
 
-        <div style={{ width: '48px', height: '3px', background: '#76B900', marginBottom: '24px', borderRadius: '2px' }} />
+        <div className="w-12 h-[3px] bg-nvidia mb-6 rounded-sm" />
 
-        <p style={{
-          fontFamily: 'Inter, sans-serif',
-          fontSize: 'clamp(0.8rem, 1.2vw, 1rem)',
-          color: '#d1d5db',
-          lineHeight: 1.7,
-          maxWidth: '420px',
-        }}>
+        <p className="font-sans text-sm sm:text-base text-gray-300 leading-relaxed max-w-[420px]">
           The premier student technology society at Galgotias University.
           Deep learning, parallel computing &amp; the future of AI.
         </p>
