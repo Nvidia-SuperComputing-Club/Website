@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../../services/api'
+import { eventsService } from '../../services/supabaseService.js'
 import {
   Plus, Pencil, Trash2, Star, StarOff, Search, X, Save,
   Calendar, MapPin, Tag, AlignLeft, Image as ImageIcon
@@ -8,7 +8,7 @@ import {
 const CATEGORIES = ['workshop', 'hackathon', 'talk', 'social']
 const EMPTY_FORM = {
   title: '', description: '', date: '', location: '',
-  category: 'workshop', image_url: '', is_featured: false,
+  type: 'workshop', image_url: '', is_featured: false, is_published: true,
 }
 
 function Toast({ msg, type }) {
@@ -43,8 +43,8 @@ export default function EventsCMSPage() {
   const fetchEvents = async () => {
     setLoading(true)
     try {
-      const result = await api.get('/events')
-      setEvents(result.data ?? [])
+      const data = await eventsService.getEvents()
+      setEvents(data || [])
     } catch (err) {
       showToast(err.message, 'error')
     } finally {
@@ -59,9 +59,9 @@ export default function EventsCMSPage() {
     setForm({
       title: ev.title, description: ev.description ?? '',
       date: ev.date?.slice(0, 16) ?? '', location: ev.location ?? '',
-      category: ev.category, image_url: ev.image_url ?? '', is_featured: ev.is_featured,
+      type: ev.type, image_url: ev.image_url ?? '', is_featured: ev.is_featured, is_published: ev.is_published,
     })
-    setEditId(ev._id)
+    setEditId(ev.id || ev._id)
     setModal('edit')
   }
 
@@ -72,10 +72,10 @@ export default function EventsCMSPage() {
     setSaving(true)
     try {
       if (modal === 'create') {
-        await api.post('/events', form)
+        await eventsService.createEvent(form)
         showToast('Event created successfully')
       } else {
-        await api.put(`/events/${editId}`, form)
+        await eventsService.updateEvent(editId, form)
         showToast('Event updated')
       }
       closeModal()
@@ -90,7 +90,7 @@ export default function EventsCMSPage() {
   const handleDelete = async (id, title) => {
     if (!window.confirm(`Are you sure you want to delete "${title}"?`)) return
     try {
-      await api.delete(`/events/${id}`)
+      await eventsService.deleteEvent(id)
       showToast('Event deleted')
       fetchEvents()
     } catch (err) {
@@ -100,8 +100,18 @@ export default function EventsCMSPage() {
 
   const toggleFeatured = async (id, current) => {
     try {
-      await api.put(`/events/${id}`, { is_featured: !current })
-      setEvents(events.map(e => e._id === id ? { ...e, is_featured: !current } : e))
+      await eventsService.updateEvent(id, { is_featured: !current })
+      setEvents(events.map(e => (e.id || e._id) === id ? { ...e, is_featured: !current } : e))
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
+  }
+
+  const togglePublished = async (id, current) => {
+    try {
+      await eventsService.updateEvent(id, { is_published: !current })
+      setEvents(events.map(e => (e.id || e._id) === id ? { ...e, is_published: !current } : e))
+      showToast(!current ? 'Event published' : 'Event unpublished')
     } catch (err) {
       showToast(err.message, 'error')
     }
@@ -109,7 +119,7 @@ export default function EventsCMSPage() {
 
   const filtered = events.filter(e => {
     const matchSearch = e.title.toLowerCase().includes(search.toLowerCase())
-    const matchCat = filterCat === 'all' || e.category === filterCat
+    const matchCat = filterCat === 'all' || e.type === filterCat
     return matchSearch && matchCat
   })
 
@@ -178,25 +188,38 @@ export default function EventsCMSPage() {
                 <th className="text-left text-gray-400 font-normal px-5 py-3">Title</th>
                 <th className="text-left text-gray-400 font-normal px-5 py-3 hidden md:table-cell">Date</th>
                 <th className="text-left text-gray-400 font-normal px-5 py-3 hidden sm:table-cell">Category</th>
+                <th className="text-left text-gray-400 font-normal px-5 py-3">Status</th>
                 <th className="text-left text-gray-400 font-normal px-5 py-3">Featured</th>
                 <th className="text-left text-gray-400 font-normal px-5 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(ev => (
-                <tr key={ev._id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
+                <tr key={ev.id || ev._id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
                   <td className="px-5 py-3 text-white font-semibold max-w-xs truncate">{ev.title}</td>
                   <td className="px-5 py-3 text-gray-400 hidden md:table-cell">
                     {ev.date ? new Date(ev.date).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-5 py-3 hidden sm:table-cell">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${catColor(ev.category)}`}>
-                      {ev.category}
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${catColor(ev.type)}`}>
+                      {ev.type}
                     </span>
                   </td>
                   <td className="px-5 py-3">
                     <button
-                      onClick={() => toggleFeatured(ev._id, ev.is_featured)}
+                      onClick={() => togglePublished(ev.id || ev._id, ev.is_published)}
+                      className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase transition-colors ${
+                        ev.is_published 
+                          ? 'bg-nvidia/10 border-nvidia/20 text-nvidia hover:bg-nvidia/20' 
+                          : 'bg-white/5 border-white/10 text-gray-500 hover:text-white'
+                      }`}
+                    >
+                      {ev.is_published ? 'Published' : 'Draft'}
+                    </button>
+                  </td>
+                  <td className="px-5 py-3">
+                    <button
+                      onClick={() => toggleFeatured(ev.id || ev._id, ev.is_featured)}
                       title="Toggle featured"
                       className="transition-colors"
                     >
@@ -216,7 +239,7 @@ export default function EventsCMSPage() {
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(ev._id, ev.title)}
+                        onClick={() => handleDelete(ev.id || ev._id, ev.title)}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
                         title="Delete"
                       >
@@ -276,7 +299,7 @@ export default function EventsCMSPage() {
                   <label className="text-xs font-mono text-gray-300 flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-nvidia" /> Category *
                   </label>
-                  <select required value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
+                  <select required value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl bg-bg-tertiary border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-nvidia transition-colors">
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -292,6 +315,19 @@ export default function EventsCMSPage() {
                       <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_featured ? 'translate-x-4' : ''}`} />
                     </button>
                     <span className="text-xs font-mono text-gray-400">{form.is_featured ? 'Yes' : 'No'}</span>
+                  </div>
+                </div>
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-xs font-mono text-gray-300">Published</label>
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-tertiary border border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, is_published: !form.is_published })}
+                      className={`relative w-9 h-5 rounded-full transition-colors ${form.is_published ? 'bg-nvidia' : 'bg-gray-700'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_published ? 'translate-x-4' : ''}`} />
+                    </button>
+                    <span className="text-xs font-mono text-gray-400">{form.is_published ? 'Yes (Visible to public)' : 'No (Draft)'}</span>
                   </div>
                 </div>
               </div>
