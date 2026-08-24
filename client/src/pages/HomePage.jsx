@@ -12,17 +12,7 @@ import { EventCountdown } from "../components/sections/EventCountdown.jsx";
 gsap.registerPlugin(ScrollTrigger);
 
 import { eventsService, homepageService } from "../services/supabaseService.js";
-const FRAME_SOURCES = Object.entries(
-  import.meta.glob("../assets/dgx/*.webp", {
-    eager: true,
-    query: "?url",
-    import: "default",
-  }),
-)
-  .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
-  .map(([, u]) => u);
-
-const TOTAL_FRAMES = FRAME_SOURCES.length;
+const TOTAL_FRAMES = 1357;
 
 const clamp = (v) => Math.max(0, Math.min(1, v));
 const fade = (p, a, b, f = 0.045) =>
@@ -31,63 +21,78 @@ const fade = (p, a, b, f = 0.045) =>
 /* ── Canvas-based frame sequence ───────────────────────────────────────── */
 
 function Sequence({ progress }) {
-  const canvasRef = useRef(null);
-  const imagesRef = useRef([]);
-  const prevFrame = useRef(-1);
+  const videoRef = useRef(null);
+  const [blobUrl, setBlobUrl] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState(false);
 
-  // preload first 40 frames on mount
+  // Load the video as a Blob so it's fully seekable in memory
+  // This prevents Vercel/HTTP range request issues on scrubbing
   useEffect(() => {
-    const preload = Math.min(40, TOTAL_FRAMES);
-    for (let i = 0; i < preload; i++) {
-      const img = new Image();
-      img.src = FRAME_SOURCES[i];
-      imagesRef.current[i] = img;
-    }
-
-    const onResize = () => {
-      // Use the latest frame from the ref to avoid stale closure on progress
-      const idx = prevFrame.current === -1 ? 0 : prevFrame.current;
-      draw(imagesRef.current[idx]);
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    fetch('/dgx-hero.mp4')
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.blob();
+      })
+      .then(blob => {
+        setBlobUrl(URL.createObjectURL(blob));
+      })
+      .catch(err => {
+        console.error("Failed to load hero video blob:", err);
+        setError(true);
+      });
   }, []);
 
-  const FRAME_W = 1920;
-  const FRAME_H = 804;
-
-  const draw = (img) => {
-    const c = canvasRef.current;
-    if (!c || !img?.naturalWidth) return;
-    const d = Math.min(devicePixelRatio || 1, 2);
-    const w = FRAME_W;
-    const h = FRAME_H;
-    if (c.width !== w * d || c.height !== h * d) {
-      c.width = w * d;
-      c.height = h * d;
-    }
-    const ctx = c.getContext("2d");
-    ctx.setTransform(d, 0, 0, d, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(img, 0, 0, w, h);
-  };
-
+  // Scrub the video based on GSAP progress
   useEffect(() => {
-    const idx = Math.round(progress * (TOTAL_FRAMES - 1));
-    if (idx === prevFrame.current) return;
-    prevFrame.current = idx;
+    const video = videoRef.current;
+    if (!video || !isReady) return;
 
-    let img = imagesRef.current[idx];
-    if (!img) {
-      img = new Image();
-      img.src = FRAME_SOURCES[idx];
-      imagesRef.current[idx] = img;
+    // We don't want to queue a new seek if it's already seeking (avoids freezing on mobile/fast scrolls)
+    if (video.seeking) return;
+
+    const duration = video.duration || 1;
+    // clamp progress to [0, 0.999] so we don't hit the absolute end which sometimes loops or stops
+    const targetTime = Math.max(0, Math.min(0.999, progress)) * duration;
+    
+    // Only seek if the difference is larger than a small epsilon
+    if (Math.abs(video.currentTime - targetTime) > 0.01) {
+      try {
+        video.currentTime = targetTime;
+      } catch (e) {
+        // Ignore AbortError from interrupted plays/seeks
+      }
     }
-    if (img.complete) draw(img);
-    else img.onload = () => draw(img);
-  }, [progress]);
+  }, [progress, isReady]);
 
-  return <canvas ref={canvasRef} className="dgx-sequence" aria-hidden="true" />;
+  if (error) {
+    return <img src="/dgx-poster.webp" className="dgx-sequence" aria-hidden="true" />;
+  }
+
+  return (
+    <>
+      <img 
+        src="/dgx-poster.webp" 
+        className="dgx-sequence" 
+        style={{ opacity: isReady ? 0 : 1, transition: 'opacity 0.3s' }} 
+        aria-hidden="true" 
+        alt=""
+      />
+      {blobUrl && (
+        <video
+          ref={videoRef}
+          src={blobUrl}
+          className="dgx-sequence"
+          style={{ opacity: isReady ? 1 : 0 }}
+          muted
+          playsInline
+          preload="auto"
+          onLoadedMetadata={() => setIsReady(true)}
+          aria-hidden="true"
+        />
+      )}
+    </>
+  );
 }
 
 /* ── Text content overlays ─────────────────────────────────────────────── */
