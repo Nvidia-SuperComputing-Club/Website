@@ -6,10 +6,16 @@ import {
 } from 'lucide-react'
 
 function StatCard({ icon: Icon, label, value, color = 'nvidia' }) {
+  const colorMap = {
+    'nvidia': { bg: 'bg-[#76B900]/15', border: 'border-[#76B900]/30', text: 'text-[#76B900]' },
+    'yellow-400': { bg: 'bg-yellow-400/15', border: 'border-yellow-400/30', text: 'text-yellow-400' }
+  };
+  const theme = colorMap[color] || colorMap['nvidia'];
+
   return (
     <div className="bg-bg-tertiary border border-white/10 rounded-xl p-5 flex items-center gap-4">
-      <div className={`p-3 rounded-xl bg-${color}/15 border border-${color}/30`}>
-        <Icon className={`w-5 h-5 text-${color}`} />
+      <div className={`p-3 rounded-xl ${theme.bg} border ${theme.border}`}>
+        <Icon className={`w-5 h-5 ${theme.text}`} />
       </div>
       <div>
         <p className="text-2xl font-display font-bold text-white">{value ?? '—'}</p>
