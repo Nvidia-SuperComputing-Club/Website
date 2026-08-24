@@ -137,7 +137,7 @@ export default function AdminLayout() {
           Skip to main content
         </a>
         {/* Top Header */}
-        <header className="h-16 bg-bg-secondary border-b border-white/10 flex items-center px-8 lg:px-10 gap-4 shrink-0">
+        <header className="h-16 bg-[#0a0a0a] border-b border-white/10 flex items-center px-8 lg:px-10 gap-4 shrink-0">
           <button
             className="lg:hidden text-gray-400 hover:text-white transition-colors"
             onClick={() => setSidebarOpen(true)}
@@ -149,7 +149,7 @@ export default function AdminLayout() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-mono text-gray-400 hover:text-nvidia transition-colors"
+            className="text-xs font-mono text-gray-400 hover:text-[#76B900] transition-colors"
           >
             ↗ View Site
           </a>

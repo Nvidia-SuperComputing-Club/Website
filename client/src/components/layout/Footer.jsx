@@ -11,6 +11,7 @@ const navLinks = [
   { label: 'Team', href: '/team' },
 ]
 
+
 export default function Footer() {
   const [footerData, setFooterData] = useState({
     description: "The official AI & Supercomputing Club dedicated to GPU computing, deep learning research, and parallel CUDA programming. Empowering the next generation of AI innovators.",
