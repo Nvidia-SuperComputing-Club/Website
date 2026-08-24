@@ -1,31 +1,6 @@
 import { teamService } from '../../../../services/supabaseService.js';
 
-const MOCK_TEAM = [
-  {
-    name: "Daksh Pratap Singh",
-    role: "Club President / NVIDIA Ambassador",
-    bio: "Student engineer specializing in CUDA-based high-performance computing, GPU memory design, and parallel architectures. Focuses on research in accelerating sparse matrix operations.",
-    github_url: "https://github.com/daxforge",
-    linkedin_url: "https://linkedin.com/in/daksh-pratap",
-    is_active: true
-  },
-  {
-    name: "Alwin Mathew",
-    role: "Vice President & Lead 3D Developer",
-    bio: "Creative technologist and frontend engineer. Deep interest in WebGL, Three.js, shaders, and creating immersive 3D user experiences on the web.",
-    github_url: "https://github.com/alwin2134",
-    linkedin_url: "https://linkedin.com/in/alwin-mathew",
-    is_active: true
-  },
-  {
-    name: "Preet Biswas",
-    role: "Backend & Systems Infrastructure Lead",
-    bio: "Systems programmer and backend engineer. Focuses on RESTful and GraphQL API services, Postgres database optimization, Docker deployment, and cloud pipelines.",
-    github_url: "https://github.com/preetbiswas12",
-    linkedin_url: "https://linkedin.com/in/preet-biswas",
-    is_active: true
-  }
-];
+// Removed MOCK_TEAM entirely to strictly rely on Supabase DB.
 
 export default async function teamHandler(args = []) {
   let members = [];
@@ -34,7 +9,7 @@ export default async function teamHandler(args = []) {
     members = data.filter(m => m.is_active !== false);
   } catch (err) {
     // Only fallback if the database actually crashes/errors, not if it's just empty
-    members = MOCK_TEAM;
+    members = [];
   }
 
   if (args.length > 0) {
