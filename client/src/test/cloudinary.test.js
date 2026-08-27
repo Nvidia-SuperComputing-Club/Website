@@ -4,25 +4,28 @@ import { uploadToCloudinary } from '../services/cloudinary.js';
 describe('Cloudinary Upload Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+    vi.unstubAllEnvs();
   });
 
-  it('should throw an error if no admin token is stored', async () => {
+  it('should throw an error if Cloudinary env variables are missing', async () => {
+    vi.stubEnv('VITE_CLOUDINARY_CLOUD_NAME', '');
+    vi.stubEnv('VITE_CLOUDINARY_API_KEY', '');
+    vi.stubEnv('VITE_CLOUDINARY_API_SECRET', '');
+
     const file = new File(['dummy content'], 'test.png', { type: 'image/png' });
     await expect(uploadToCloudinary(file)).rejects.toThrow(
-      'You must be logged in as an admin to upload images.'
+      'Cloudinary environment variables are missing'
     );
   });
 
-  it('should upload image successfully when admin token is present', async () => {
-    localStorage.setItem('nvidia_sc_token', 'mock-admin-token');
+  it('should upload image successfully when env variables are configured', async () => {
+    vi.stubEnv('VITE_CLOUDINARY_CLOUD_NAME', 'test-cloud');
+    vi.stubEnv('VITE_CLOUDINARY_API_KEY', 'test-key');
+    vi.stubEnv('VITE_CLOUDINARY_API_SECRET', 'test-secret');
 
     const mockResponseData = {
-      success: true,
-      data: {
-        url: 'https://res.cloudinary.com/demo/image/upload/v1234/test.png',
-        path: 'nvidia-sc/homepage/test_public_id',
-      },
+      secure_url: 'https://res.cloudinary.com/test-cloud/image/upload/v1234/test.png',
+      public_id: 'homepage/test_public_id',
     };
 
     global.fetch = vi.fn().mockResolvedValue({
@@ -35,16 +38,17 @@ describe('Cloudinary Upload Service', () => {
 
     expect(global.fetch).toHaveBeenCalled();
     const fetchArgs = global.fetch.mock.calls[0];
-    expect(fetchArgs[0]).toContain('/upload');
-    expect(fetchArgs[1].headers.Authorization).toBe('Bearer mock-admin-token');
+    expect(fetchArgs[0]).toContain('https://api.cloudinary.com/v1_1/test-cloud/image/upload');
     expect(result).toEqual({
-      url: mockResponseData.data.url,
-      publicId: mockResponseData.data.path,
+      url: mockResponseData.secure_url,
+      publicId: mockResponseData.public_id,
     });
   });
 
-  it('should throw an error if backend upload returns a non-200 status', async () => {
-    localStorage.setItem('nvidia_sc_token', 'mock-admin-token');
+  it('should throw an error if Cloudinary returns an error status', async () => {
+    vi.stubEnv('VITE_CLOUDINARY_CLOUD_NAME', 'test-cloud');
+    vi.stubEnv('VITE_CLOUDINARY_API_KEY', 'test-key');
+    vi.stubEnv('VITE_CLOUDINARY_API_SECRET', 'test-secret');
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
