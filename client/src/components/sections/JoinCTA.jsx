@@ -25,7 +25,7 @@ export default function JoinCTA() {
             </p>
           </div>
           <Link
-            to="/events"
+            to="/join"
             className="shrink-0 px-8 py-3.5 rounded-full bg-nvidia hover:bg-nvidia-light text-black font-display font-bold text-base shadow-nvidia-glow transition-all duration-300 flex items-center justify-center gap-3 group active:scale-[0.98]"
           >
             <span>Apply for Membership</span>

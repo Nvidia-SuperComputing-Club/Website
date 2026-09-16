@@ -10,7 +10,11 @@ CREATE TABLE IF NOT EXISTS public.applications (
   phone           TEXT,
   enrollment_no   TEXT,
   branch          TEXT,
+  department      TEXT,                  -- Department / school
   year            TEXT,
+  semester        TEXT,                  -- e.g. "5th Semester"
+  interests       TEXT[],                -- Tracks picked during onboarding
+  goal            TEXT,                  -- What they want out of the year
   why_join        TEXT,                  -- Why do you want to join?
   experience      TEXT,                  -- Prior experience / skills
   linkedin_url    TEXT,
@@ -33,6 +37,7 @@ CREATE TRIGGER applications_set_updated_at
 CREATE INDEX IF NOT EXISTS idx_applications_status      ON public.applications (status);
 CREATE INDEX IF NOT EXISTS idx_applications_created_at  ON public.applications (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_applications_email       ON public.applications (email);
+CREATE INDEX IF NOT EXISTS idx_applications_department  ON public.applications (department);
 
 -- ── Row Level Security ──────────────────────────────────────
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;

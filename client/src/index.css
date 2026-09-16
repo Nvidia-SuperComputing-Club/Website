@@ -465,3 +465,7 @@
 .skip-story:hover,.skip-story:focus-visible{color:#fff;border-color:#76b90080}
 .skip-story.is-hidden{opacity:0;visibility:hidden}
 @media (max-width:767px){.chapter-label{display:none}}
+
+/* Join flow: keyboard hints are noise on touch devices */
+.join-kbd{display:none}
+@media (hover:hover) and (pointer:fine){.join-kbd{display:inline-block}}

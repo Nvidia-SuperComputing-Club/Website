@@ -172,53 +172,88 @@ export const teamService = {
   },
 };
 
+// Columns added by schemas/applications_onboarding.sql. Until that migration
+// is applied, inserts using them fail and we fold them into `why_join`.
+const ONBOARDING_COLUMNS =['department', 'semester', 'interests', 'goal'];
+
+const isMissingColumnError = (error) => {
+  if (!error) return false;
+  const text = `${error.code || ''} ${error.message || ''} ${error.details || ''}`;
+  return (
+    error.code === 'PGRST204' ||
+    error.code === '42703' ||
+    /column .* does not exist|could not find the '.*' column/i.test(text)
+  );
+};
+
+/** Same application, described in the columns an un-migrated table has. */
+const toLegacyPayload = (applicationData) => {
+  const legacy = { ...applicationData };
+  const extra = [];
+  for (const column of ONBOARDING_COLUMNS) {
+    const value = legacy[column];
+    delete legacy[column];
+    if (value === null || value === undefined || value === '') continue;
+    const label = column.charAt(0).toUpperCase() + column.slice(1);
+    extra.push(`${label}: ${Array.isArray(value) ? value.join(', ') : value}`);
+  }
+  if (extra.length) {
+    legacy.why_join = [legacy.why_join, extra.join('\n')].filter(Boolean).join('\n\n');
+  }
+  return legacy;
+};
+
+const storeApplicationLocally = (applicationData) => {
+  const localApps = JSON.parse(localStorage.getItem('nvidia_club_applications') || '[]');
+  const newApp = {
+    id: 'app-' + Date.now(),
+    ...applicationData,
+    status: 'pending',
+    created_at: new Date().toISOString(),
+    offline: true,
+  };
+  localApps.unshift(newApp);
+  localStorage.setItem('nvidia_club_applications', JSON.stringify(localApps));
+  return newApp;
+};
+
 // Membership Application Services
 export const applicationService = {
   submitApplication: async (applicationData) => {
-    try {
-      // First attempt insert with select
+    const insert = async (payload) => {
+      // Insert with select() first; if RLS blocks reading the row back, the
+      // plain insert below still records the application.
       const { data, error } = await supabase
         .from('applications')
-        .insert([applicationData])
+        .insert([payload])
         .select()
         .single();
+      if (!error && data) return { data };
 
-      if (!error && data) {
-        return data;
+      const { error: insertError } = await supabase.from('applications').insert([payload]);
+      if (insertError) return { error: insertError };
+      return { data: { success: true, ...payload } };
+    };
+
+    try {
+      let result = await insert(applicationData);
+
+      if (result.error && isMissingColumnError(result.error)) {
+        console.warn(
+          'applications table is missing the onboarding columns — run schemas/applications_onboarding.sql. Submitting in the legacy shape for now.',
+          result.error,
+        );
+        result = await insert(toLegacyPayload(applicationData));
       }
 
-      // If SELECT was blocked by RLS or failed, try insert without select()
-      const { error: insertError } = await supabase
-        .from('applications')
-        .insert([applicationData]);
-
-      if (insertError) {
-        console.warn('Supabase direct insert encountered error, storing in local fallback:', insertError);
-        const localApps = JSON.parse(localStorage.getItem('nvidia_club_applications') || '[]');
-        const newApp = {
-          id: 'app-' + Date.now(),
-          ...applicationData,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-        };
-        localApps.unshift(newApp);
-        localStorage.setItem('nvidia_club_applications', JSON.stringify(localApps));
-        return newApp;
+      if (result.error) {
+        console.warn('Supabase insert failed, storing in local fallback:', result.error);
+        return storeApplicationLocally(applicationData);
       }
-
-      return { success: true, ...applicationData };
+      return result.data;
     } catch (err) {
       console.warn('Supabase application submission caught exception, using local store:', err);
-      const localApps = JSON.parse(localStorage.getItem('nvidia_club_applications') || '[]');
-      const newApp = {
-        id: 'app-' + Date.now(),
-        ...applicationData,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      };
-      localApps.unshift(newApp);
-      localStorage.setItem('nvidia_club_applications', JSON.stringify(localApps));
-      return newApp;
+      return storeApplicationLocally(applicationData);
     }
   },
 

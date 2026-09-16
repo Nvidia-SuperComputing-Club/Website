@@ -162,7 +162,7 @@ export default function AnimatedNavFramer() {
             {/* Join Club Button */}
             <motion.div variants={itemVariants}>
               <Link
-                to="/events"
+                to="/join"
                 onClick={(e) => e.stopPropagation()}
                 className="text-sm font-semibold text-black bg-nvidia hover:bg-nvidia-light transition-colors px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-nvidia-glow"
               >
