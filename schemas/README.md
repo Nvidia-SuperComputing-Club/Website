@@ -9,6 +9,7 @@ This folder contains all PostgreSQL/Supabase schema definitions for the NVIDIA S
 | `events.sql` | `events` | Club events, workshops, hackathons |
 | `team.sql` | `team` | Team members / leadership directory |
 | `applications.sql` | `applications` | Join/membership applications |
+| `applications_onboarding.sql` | `applications` | Migration: adds the onboarding columns to an existing table |
 | `00_migrate_all.sql` | — | Master file — runs all schemas in order |
 
 ## How to Apply
@@ -17,6 +18,11 @@ This folder contains all PostgreSQL/Supabase schema definitions for the NVIDIA S
 1. Go to your Supabase dashboard → **SQL Editor**
 2. Copy and paste the contents of each `.sql` file (in order: `events.sql` → `team.sql` → `applications.sql`)
 3. Click **Run**
+
+### Already have the `applications` table?
+Run `applications_onboarding.sql` once to add the columns the join flow writes
+(`department`, `semester`, `interests`, `goal`). Until it is applied the site
+still accepts applications — those answers are folded into `why_join` instead.
 
 ### Option B — Supabase CLI
 ```bash
