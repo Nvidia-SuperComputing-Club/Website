@@ -15,7 +15,7 @@ const application = {
   semester: '5th Semester',
   year: '3rd Year',
   interests: ['CUDA & GPU Architecture'],
-  experience: 'I build things',
+  experience: 'I make things',
   goal: 'Ship a real project',
   why_join: 'A campus speech model.',
 };

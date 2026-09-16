@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: 'Who can apply?',
-    a: 'Any currently enrolled Galgotias University student, from any department or year.',
+    a: 'Any currently enrolled Galgotias University student, from any department or year. Plenty of members never touch a GPU — they run events, design, media, outreach and partnerships.',
   },
   {
     q: 'What is the time commitment?',
@@ -258,6 +258,10 @@ export default function JoinFlow() {
       <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-gray-300 sm:text-base">
         Nine quick questions and you&rsquo;re in the queue for DGX H200 access, workshops and
         hackathons. No CV, no interview round.
+      </p>
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-gray-400">
+        Not a coder? Half the club runs on design, media, outreach and events &mdash; those
+        crews are the ones we are short on.
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2 font-mono text-[11px] text-gray-400">

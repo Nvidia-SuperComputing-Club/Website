@@ -1,5 +1,6 @@
 import {
   Cpu, Sparkles, Layers, Zap, Globe, Server,
+  Palette, Camera, Megaphone, Handshake, ClipboardList, HeartHandshake,
   Rocket, Trophy, FlaskConical, BadgeCheck, Users,
 } from 'lucide-react';
 
@@ -23,7 +24,7 @@ export const PROGRAMS = ['B.Tech', 'M.Tech', 'BCA', 'MCA', 'B.Sc', 'BBA / B.Com'
 
 export const SEMESTERS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
-export const INTEREST_TRACKS = [
+export const BUILD_TRACKS = [
   { value: 'CUDA & GPU Architecture', label: 'CUDA & GPU Architecture', hint: 'Kernels, memory hierarchy, parallel C++', icon: Cpu },
   { value: 'LLMs & Generative AI', label: 'LLMs & Generative AI', hint: 'Fine-tuning, RAG, TensorRT-LLM', icon: Sparkles },
   { value: 'Computer Vision & 3D', label: 'Computer Vision & 3D', hint: 'Gaussian splatting, DeepStream, NeRF', icon: Layers },
@@ -32,10 +33,45 @@ export const INTEREST_TRACKS = [
   { value: 'Distributed Supercomputing', label: 'Distributed Supercomputing', hint: 'Slurm, InfiniBand, multi-node MPI', icon: Server },
 ];
 
+/** The non-technical half of the club — no code required. */
+export const CREW_TRACKS = [
+  { value: 'Design & brand', label: 'Design & brand', hint: 'Posters, decks, the way the club looks', icon: Palette },
+  { value: 'Media & content', label: 'Media & content', hint: 'Photos, reels and recaps of every event', icon: Camera },
+  { value: 'Marketing & socials', label: 'Marketing & socials', hint: 'Fill the room, run the pages', icon: Megaphone },
+  { value: 'Outreach & partnerships', label: 'Outreach & partnerships', hint: 'Sponsors, speakers, other campuses', icon: Handshake },
+  { value: 'Events & logistics', label: 'Events & logistics', hint: 'Venues, schedules, making the day run', icon: ClipboardList },
+  { value: 'Community & mentoring', label: 'Community & mentoring', hint: 'Onboard juniors, run study circles', icon: HeartHandshake },
+];
+
+export const INTEREST_TRACKS = [...BUILD_TRACKS, ...CREW_TRACKS];
+
+const isCrew = (value) => CREW_TRACKS.some((t) => t.value === value);
+
+export const INTEREST_GROUPS = [
+  {
+    id: 'build',
+    label: 'Build & research',
+    hint: 'Hands on the GPUs, the models and the hardware',
+    options: BUILD_TRACKS,
+  },
+  {
+    id: 'crew',
+    label: 'Run the club',
+    hint: 'No code needed — and the fastest way in',
+    badge: 'Spots open now',
+    options: CREW_TRACKS,
+    // Shown once someone has only picked build tracks.
+    nudge: (selected) =>
+      selected.length && !selected.some(isCrew)
+        ? 'Most applications come in for the build tracks, so those reviews take a while. The crews are short-handed right now and sit in the same rooms — DGX launches, sponsor calls, every event. Add one and you can still do both.'
+        : null,
+  },
+];
+
 export const SKILL_LEVELS = [
-  { value: 'explorer', label: 'Just getting started', hint: 'Curious about AI and GPUs, here to learn' },
-  { value: 'builder', label: 'I build things', hint: 'Written Python, PyTorch or C++ projects before' },
-  { value: 'deep', label: 'Deep in it', hint: 'Hands-on CUDA, distributed training or research' },
+  { value: 'explorer', label: 'Just getting started', hint: 'New to this and here to learn' },
+  { value: 'builder', label: 'I make things', hint: 'Shipped work before — code, designs, campaigns or events' },
+  { value: 'deep', label: 'Deep in my craft', hint: 'Serious hours in it, whether that is CUDA, research, design or organising' },
 ];
 
 export const GOALS = [
@@ -43,6 +79,7 @@ export const GOALS = [
   { value: 'Win hackathons', label: 'Win hackathons', hint: 'Compete on campus and nationally', icon: Trophy },
   { value: 'Do research', label: 'Do research', hint: 'Work towards a paper or lab work', icon: FlaskConical },
   { value: 'Earn certifications', label: 'Earn certifications', hint: 'NVIDIA DLI credentials on your resume', icon: BadgeCheck },
+  { value: 'Run things', label: 'Run things', hint: 'Lead events, grow the club, build the brand', icon: ClipboardList },
   { value: 'Meet people', label: 'Meet people', hint: 'Find a team and learn alongside others', icon: Users },
 ];
 
@@ -123,9 +160,11 @@ export const STEPS = [
     kind: 'multi',
     eyebrow: 'The fun part',
     question: 'What do you want to work on?',
-    hint: 'Pick up to three. This decides which projects we point you at.',
+    hint: 'Pick up to three, from either side. Building on the GPUs is one part of what we do — the club only runs because of the rest.',
     summaryLabel: 'Interests',
+    groups: INTEREST_GROUPS,
     options: INTEREST_TRACKS,
+    columns: 2,
     max: 3,
     validate: (v) => (!v || !v.length ? 'Pick at least one.' : null),
   },
@@ -155,9 +194,9 @@ export const STEPS = [
     kind: 'longtext',
     optional: true,
     eyebrow: 'Last one',
-    question: 'You get the DGX for a weekend. What do you build?',
-    hint: 'A line or two. Skip it if nothing comes to mind — it will not count against you.',
-    placeholder: 'Fine-tune a Hindi speech model on lecture recordings...',
+    question: 'The club gets a free weekend with the DGX and a budget. What would you do with it?',
+    hint: 'Build it, film it, host it — whatever you would want to make happen. A line or two, and skipping it counts against nobody.',
+    placeholder: 'Fine-tune a Hindi lecture transcriber — or run a 24h build night and film the whole thing...',
     summaryLabel: 'Weekend build',
     maxLength: 280,
   },

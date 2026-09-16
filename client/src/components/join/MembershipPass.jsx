@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Check, Copy, Share2, CalendarDays, Users, WifiOff } from 'lucide-react';
 
+import { CREW_TRACKS } from './joinSteps.js';
+
 /** One-shot particle burst behind the pass. Cheap, and skipped for reduced motion. */
 function Confetti({ active }) {
   const canvasRef = useRef(null);
@@ -212,6 +214,20 @@ export default function MembershipPass({ answers, passId, offline, reducedMotion
           </div>
         </div>
       </motion.div>
+
+      {/* Last, lowest-pressure ask: they are already in, so this costs nothing. */}
+      {!answers.interests.some((i) => CREW_TRACKS.some((c) => c.value === i)) && (
+        <motion.p
+          initial={reducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mx-auto mt-6 max-w-md text-xs leading-relaxed text-gray-400"
+        >
+          <span className="font-semibold text-gray-200">One more thing.</span> The design, media
+          and events crews onboard within a week &mdash; no code, and you still get the DGX
+          sessions. Reply to your invite email if you want in on one.
+        </motion.p>
+      )}
 
       {offline && (
         <p className="mx-auto mt-5 flex max-w-md items-center justify-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-[11px] text-yellow-200">

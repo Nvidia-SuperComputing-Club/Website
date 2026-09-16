@@ -46,7 +46,7 @@ describe('validateStep', () => {
 
 describe('summaryValue', () => {
   it('reads back option labels rather than stored values', () => {
-    expect(summaryValue(stepById('experience'), 'builder')).toBe('I build things');
+    expect(summaryValue(stepById('experience'), 'builder')).toBe('I make things');
     expect(summaryValue(stepById('semester'), '5th')).toBe('5th Semester');
     expect(summaryValue(stepById('interests'), ['A', 'B'])).toBe('A, B');
     expect(summaryValue(stepById('goal'), '')).toBe('');
@@ -77,7 +77,7 @@ describe('buildPayload', () => {
       semester: '5th Semester',
       year: '3rd Year',
       interests: ['CUDA & GPU Architecture', 'LLMs & Generative AI'],
-      experience: 'I build things',
+      experience: 'I make things',
       goal: 'Ship a real project',
       why_join: 'A Hindi lecture transcription model.',
     });
